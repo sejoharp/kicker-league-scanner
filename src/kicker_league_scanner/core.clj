@@ -9,7 +9,7 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
-(defn get-leagues [])
+(defn get-league-overview [])
 
 (defn get-league-links-from-league-overview [parsed-html]
   (let [link-htmls (s/select (s/descendant (s/class "readon"))
@@ -42,8 +42,6 @@
                                 (s/class "sectiontableentry2")))
             match-page))
 
-
-
 (defn parse-double-player [double-player-snippet]
   [(->> double-player-snippet
         second
@@ -58,8 +56,7 @@
   [(->> single-player-snippet
         second
         :content
-        first)
-   ])
+        first)])
 
 (defn parse-player [player-snippet]
   (if (= 6 (count player-snippet))
@@ -104,6 +101,52 @@
   (let [game-snippets (find-game-snippets parsed-html)]
     (->> game-snippets
          (map parse-game))))
+
+(defn parse-teams [match-page]
+  (let [teams-snippet (s/select (s/descendant (s/and (s/class "sectiontableheader")
+                                                     (s/tag :th)))
+                                match-page)
+        teams-string (->> teams-snippet
+                          second
+                          :content
+                          (#(nth % 6)))
+        teams (->> teams-string
+                   (#(str/replace % #">" ""))
+                   str/trim
+                   (#(str/split % #"vs.")))]
+    {:home-team  (first teams)
+     :guest-team (second teams)}))
+
+
+(defn reformat-date [date-string]
+  (.format
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
+
+(defn parse-date [match-page]
+  (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
+                                                    (s/tag :div)))
+                               match-page)
+        date-string (->> date-snippet
+                         first
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first)
+        cleaned-date-string
+        (->> date-string
+             str/trim
+             (#(str/split % #" "))
+             second)]
+    (reformat-date cleaned-date-string)))
 
 (defn -main []
   (println "Hello, World!"))

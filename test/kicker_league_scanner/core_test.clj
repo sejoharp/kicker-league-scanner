@@ -100,7 +100,7 @@
             :position 3}
            (parse-game double-game)))))
 
-(deftest ^:test-refresh/focus parses-games-from-match
+(deftest parses-games-from-match
   (let [parsed-html (html->hickory "test/resources/match.html")]
     (is (= [{:home     {:names ["Felix"] :score 6}
              :guest    {:names ["Samuel"] :score 2}
@@ -151,3 +151,14 @@
              :guest    {:names ["Samuel" "Derek"] :score 2}
              :position 16}]
            (get-games-from-match parsed-html)))))
+
+(deftest parses-teams
+  (let [match-html (html->hickory "test/resources/match.html")]
+    (is (= {:home-team  "Flying Circus"
+            :guest-team "Kickertrupp (NR)"}
+           (parse-teams match-html)))))
+
+(deftest parses-date
+  (let [match-html (html->hickory "test/resources/match.html")]
+    (is (= "2023-09-05"
+           (parse-date match-html)))))
