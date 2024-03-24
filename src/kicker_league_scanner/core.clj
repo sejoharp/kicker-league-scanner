@@ -9,7 +9,7 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
-(def league-overview "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen#vid229")
+(def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen#vid229")
 
 (defn get-league-links-from-league-overview [parsed-html]
   (let [link-snippets (s/select (s/descendant (s/class "readon"))
@@ -31,10 +31,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href])))))
 
 (defn find-game-snippets [match-page]
@@ -118,10 +118,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -154,6 +154,19 @@
      :guest-team (:guest-team teams)
      :games      games}))
 
+(defn load-season [season-link]
+  (->> season-link
+       html->hickory
+       get-league-links-from-league-overview
+       (map html->hickory)
+       (map get-match-links-from-league)
+       (map html->hickory)
+       (map parse-match)
+       ))
+
 (defn -main []
-  (println "Hello, World!"))
+  (println "Hello, World!")
+  (comment
+    (load-season league-overview-link)
+    ))
 
