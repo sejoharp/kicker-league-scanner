@@ -118,7 +118,7 @@
             {:home {:names ["Ava"] :score 6} :guest {:names ["Ian"] :score 4} :position 14}
             {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
             {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
-           (get-games-from-match parsed-html)))))
+           (parse-games parsed-html)))))
 
 (deftest parses-teams
   (let [match-html (html->hickory "test/resources/match.html")]
@@ -131,3 +131,25 @@
     (is (= "2023-09-05"
            (parse-date match-html)))))
 
+(deftest ^:test-refresh/focus parses-match
+  (let [match-html (html->hickory "test/resources/match.html")]
+    (is (= {:date       "2023-09-05"
+            :home-team  "Flying Circus"
+            :guest-team "Kickertrupp (NR)"
+            :games      [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
+                         {:home {:names ["Walter"] :score 2} :guest {:names ["Yasmine"] :score 6} :position 2}
+                         {:home {:names ["Walter" "Felix"] :score 3} :guest {:names ["Samuel" "Boran"] :score 6} :position 3}
+                         {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}
+                         {:home {:names ["George"] :score 2} :guest {:names ["Yasmine"] :score 6} :position 5}
+                         {:home {:names ["Walter"] :score 6} :guest {:names ["Leon"] :score 3} :position 6}
+                         {:home {:names ["George" "Ava"] :score 2} :guest {:names ["Yasmine" "Boran"] :score 6} :position 7}
+                         {:home {:names ["George" "Ava"] :score 2} :guest {:names ["Yasmine" "Boran"] :score 6} :position 8}
+                         {:home {:names ["Felix"] :score 6} :guest {:names ["Ian"] :score 4} :position 9}
+                         {:home {:names ["Ava"] :score 6} :guest {:names ["Leon"] :score 3} :position 10}
+                         {:home {:names ["Walter" "Ava"] :score 3} :guest {:names ["Ian" "Derek"] :score 6} :position 11}
+                         {:home {:names ["Walter" "Ava"] :score 5} :guest {:names ["Ian" "Derek"] :score 5} :position 12}
+                         {:home {:names ["George"] :score 6} :guest {:names ["Samuel"] :score 3} :position 13}
+                         {:home {:names ["Ava"] :score 6} :guest {:names ["Ian"] :score 4} :position 14}
+                         {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
+                         {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]}
+           (parse-match match-html)))))
