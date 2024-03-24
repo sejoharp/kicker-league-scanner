@@ -42,6 +42,8 @@
                                 (s/class "sectiontableentry2")))
             match-page))
 
+
+
 (defn parse-double-player [double-player-snippet]
   [(->> double-player-snippet
         second
@@ -99,17 +101,9 @@
      :position position}))
 
 (defn get-games-from-match [parsed-html]
-  (let [link-maps (s/select (s/descendant (s/or (s/class "sectiontableentry1")
-                                                (s/class "sectiontableentry2")))
-                            parsed-html)]
-    #_(->> link-maps
-           (filter #(and
-                      (completed-match? (:content %))
-                      (some? (get-in % [:attrs :href]))
-                      (str/includes? (get-in % [:attrs :href])
-                                     "begegnung_spielplan")))
-           (map #(get-in % [:attrs :href])))
-    "not implemented yet"))
+  (let [game-snippets (find-game-snippets parsed-html)]
+    (->> game-snippets
+         (map parse-game))))
 
 (defn -main []
   (println "Hello, World!"))

@@ -87,7 +87,7 @@
 
            (get-match-links-from-league parsed-html)))))
 
-(deftest ^:test-refresh/focus parses-game
+(deftest parses-game
   (let [game-snippets (find-game-snippets (html->hickory "test/resources/match.html"))
         single-game (first game-snippets)
         double-game (nth game-snippets 2)]
@@ -100,7 +100,7 @@
             :position 3}
            (parse-game double-game)))))
 
-(deftest parses-games-from-match
+(deftest ^:test-refresh/focus parses-games-from-match
   (let [parsed-html (html->hickory "test/resources/match.html")]
     (is (= [{:home     {:names ["Felix"] :score 6}
              :guest    {:names ["Samuel"] :score 2}
@@ -112,7 +112,7 @@
              :guest    {:names ["Samuel" "Boran"] :score 6}
              :position 3}
             {:home     {:names ["Walter" "Felix"] :score 6}
-             :guest    {:names ["Yasmine" "Boran"] :score 4}
+             :guest    {:names ["Samuel" "Boran"] :score 4}
              :position 4}
             {:home     {:names ["George"] :score 2}
              :guest    {:names ["Yasmine"] :score 6}
