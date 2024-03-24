@@ -140,23 +140,21 @@
                          second
                          :content
                          first)
-        cleaned-date-string
-        (->> date-string
-             str/trim
-             (#(str/split % #" "))
-             second)]
+        cleaned-date-string (->> date-string
+                                 str/trim
+                                 (#(str/split % #" "))
+                                 second)]
     (reformat-date cleaned-date-string)))
 
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
         teams (parse-teams match-page)
         games (parse-games match-page)]
-    {:date date
-     :home-team (:home-team teams)
+    {:date       date
+     :home-team  (:home-team teams)
      :guest-team (:guest-team teams)
-     :games games}
-    )
-  )
+     :games      games}))
+
 (defn -main []
   (println "Hello, World!"))
 
