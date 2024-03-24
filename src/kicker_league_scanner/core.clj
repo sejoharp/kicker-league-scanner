@@ -31,16 +31,45 @@
                             parsed-html)]
     (->> link-maps
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href])))))
 
 (defn find-game-snippets [match-page]
   (s/select (s/descendant (s/or (s/class "sectiontableentry1")
                                 (s/class "sectiontableentry2")))
             match-page))
+
+(defn parse-double-player [double-player-snippet]
+  [(->> double-player-snippet
+        second
+        :content
+        first)
+   (->> double-player-snippet
+        (#(nth % 4))
+        :content
+        first)])
+
+(defn parse-single-player [single-player-snippet]
+  [(->> single-player-snippet
+        second
+        :content
+        first)
+   ])
+
+(defn parse-player [player-snippet]
+  (if (= 6 (count player-snippet))
+    (parse-double-player player-snippet)
+    (parse-single-player player-snippet)))
+
+(defn parse-scores [scores-snippet]
+  (->> scores-snippet
+       first
+       (#(str/split % #":"))
+       (map #(Integer/parseInt %))))
+
 (defn parse-game [parsed-html]
   (let [body (:content parsed-html)
         position (->> body
@@ -48,40 +77,37 @@
                       :content
                       first
                       Integer/parseInt)
-        first-home-player (->> body
-                               (#(nth % 5))
-                               :content
-                               second
-                               :content
-                               first)
-        first-guest-player (->> body
-                                (#(nth % 9))
-                                :content
-                                second
-                                :content
-                                first)
+        home-player (->> body
+                         (#(nth % 5))
+                         :content
+                         parse-player)
+        guest-player (->> body
+                          (#(nth % 9))
+                          :content
+                          parse-player)
         scores (->> body
                     (#(nth % 7))
                     :content
-                    first
-                    (#(str/split % #":"))
-                    (map #(Integer/parseInt %)))]
+                    parse-scores)]
 
-    {:home     {:names [first-home-player]
+    ;#TODO: Brauche ich noch Datum und Teamnamen?
+    ; Wie habe ich das bis jetzt gemacht?
+    {:home     {:names home-player
                 :score (first scores)}
-     :guest    {:names [first-guest-player]
+     :guest    {:names guest-player
                 :score (second scores)}
      :position position}))
+
 (defn get-games-from-match [parsed-html]
   (let [link-maps (s/select (s/descendant (s/or (s/class "sectiontableentry1")
                                                 (s/class "sectiontableentry2")))
                             parsed-html)]
     #_(->> link-maps
            (filter #(and
-                     (completed-match? (:content %))
-                     (some? (get-in % [:attrs :href]))
-                     (str/includes? (get-in % [:attrs :href])
-                                    "begegnung_spielplan")))
+                      (completed-match? (:content %))
+                      (some? (get-in % [:attrs :href]))
+                      (str/includes? (get-in % [:attrs :href])
+                                     "begegnung_spielplan")))
            (map #(get-in % [:attrs :href])))
     "not implemented yet"))
 
