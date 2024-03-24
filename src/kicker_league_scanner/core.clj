@@ -9,15 +9,15 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
-(defn get-league-overview [])
+(def league-overview "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen#vid229")
 
 (defn get-league-links-from-league-overview [parsed-html]
-  (let [link-htmls (s/select (s/descendant (s/class "readon"))
-                             parsed-html)
-        begegnungen-links (filter #(str/includes? (:content %) "Begegnungen …")
-                                  link-htmls)
+  (let [link-snippets (s/select (s/descendant (s/class "readon"))
+                                parsed-html)
+        league-snippets (filter #(str/includes? (:content %) "Begegnungen …")
+                                link-snippets)
         links (map #(get-in % [:attrs :href])
-                   begegnungen-links)]
+                   league-snippets)]
     links))
 
 (defn completed-match? [[result-info & remaining]]
@@ -25,11 +25,11 @@
     (contains? (set "0123456789") first-character)))
 
 (defn get-match-links-from-league [parsed-html]
-  (let [link-maps (s/select (s/descendant (s/or (s/class "sectiontableentry1")
-                                                (s/class "sectiontableentry2"))
-                                          (s/tag :a))
-                            parsed-html)]
-    (->> link-maps
+  (let [link-snippets (s/select (s/descendant (s/or (s/class "sectiontableentry1")
+                                                    (s/class "sectiontableentry2"))
+                                              (s/tag :a))
+                                parsed-html)]
+    (->> link-snippets
          (filter #(and
                    (completed-match? (:content %))
                    (some? (get-in % [:attrs :href]))
@@ -70,21 +70,21 @@
        (map #(Integer/parseInt %))))
 
 (defn parse-game [parsed-html]
-  (let [body (:content parsed-html)
-        position (->> body
+  (let [game-snippet (:content parsed-html)
+        position (->> game-snippet
                       second
                       :content
                       first
                       Integer/parseInt)
-        home-player (->> body
+        home-player (->> game-snippet
                          (#(nth % 5))
                          :content
                          parse-player)
-        guest-player (->> body
+        guest-player (->> game-snippet
                           (#(nth % 9))
                           :content
                           parse-player)
-        scores (->> body
+        scores (->> game-snippet
                     (#(nth % 7))
                     :content
                     parse-scores)]
@@ -99,8 +99,7 @@
 
 (defn parse-games [parsed-html]
   (let [game-snippets (find-game-snippets parsed-html)]
-    (->> game-snippets
-         (map parse-game))))
+    (map parse-game game-snippets)))
 
 (defn parse-teams [match-page]
   (let [teams-snippet (s/select (s/descendant (s/and (s/class "sectiontableheader")
