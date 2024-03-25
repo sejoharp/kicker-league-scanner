@@ -16,16 +16,18 @@
 ;   Content-Length: [length]
 ;
 ;   filter_saison_id=11&ok=Los&task=veranstaltungen
-(def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen#vid229")
+(def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+
+(defn add-kickern-hamburg-domain [path]
+  (str "https://kickern-hamburg.de" path))
 
 (defn get-league-links-from-league-overview [parsed-html]
   (let [link-snippets (s/select (s/descendant (s/class "readon"))
                                 parsed-html)
         league-snippets (filter #(str/includes? (:content %) "Begegnungen …")
                                 link-snippets)
-        links (map #(get-in % [:attrs :href])
-                   league-snippets)]
-    links))
+        link-paths (map #(get-in % [:attrs :href]) league-snippets)]
+    (map add-kickern-hamburg-domain link-paths)))
 
 (defn completed-match? [[result-info & remaining]]
   (let [first-character (first result-info)]
@@ -42,7 +44,8 @@
                    (some? (get-in % [:attrs :href]))
                    (str/includes? (get-in % [:attrs :href])
                                   "begegnung_spielplan")))
-         (map #(get-in % [:attrs :href])))))
+         (map #(get-in % [:attrs :href]))
+         (map add-kickern-hamburg-domain))))
 
 (defn find-game-snippets [match-page]
   (s/select (s/descendant (s/or (s/class "sectiontableentry1")
