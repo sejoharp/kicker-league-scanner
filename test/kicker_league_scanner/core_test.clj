@@ -131,6 +131,11 @@
     (is (= "2023-09-05"
            (parse-date match-html)))))
 
+(deftest parses-link
+  (let [match-html (html->hickory "test/resources/match.html")]
+    (is (= "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+           (parse-link match-html)))))
+
 (deftest ^:test-refresh/focus parses-match
   (let [match-html (html->hickory "test/resources/match.html")]
     (is (= {:date       "2023-09-05"
@@ -151,5 +156,6 @@
                          {:home {:names ["George"] :score 6} :guest {:names ["Samuel"] :score 3} :position 13}
                          {:home {:names ["Ava"] :score 6} :guest {:names ["Ian"] :score 4} :position 14}
                          {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
-                         {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]}
+                         {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
+            :link "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}
            (parse-match match-html)))))

@@ -38,10 +38,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href])))))
 
 (defn find-game-snippets [match-page]
@@ -123,12 +123,20 @@
     {:home-team  (first teams)
      :guest-team (second teams)}))
 
+(defn parse-link [match-page]
+  (let [link-snippet (s/select (s/descendant (s/tag :link))
+                               match-page)]
+    (-> link-snippet
+        (nth 7)
+        :attrs
+        :href)))
+
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -152,15 +160,16 @@
                                  second)]
     (reformat-date cleaned-date-string)))
 
-;TODO: add link to the game to be able to varify contents later
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
         teams (parse-teams match-page)
-        games (parse-games match-page)]
+        games (parse-games match-page)
+        link (parse-link match-page)]
     {:date       date
      :home-team  (:home-team teams)
      :guest-team (:guest-team teams)
-     :games      games}))
+     :games      games
+     :link link}))
 
 (defn load-season [season-link]
   (->> season-link
