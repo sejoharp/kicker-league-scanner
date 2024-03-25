@@ -9,6 +9,13 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
+; to select other seasons, do the following post request:
+;   POST /liga/ergebnisse-und-tabellen HTTP/1.1
+;   Host: example.com  (replace example.com with the actual host)
+;   Content-Type: application/x-www-form-urlencoded
+;   Content-Length: [length]
+;
+;   filter_saison_id=11&ok=Los&task=veranstaltungen
 (def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen#vid229")
 
 (defn get-league-links-from-league-overview [parsed-html]
@@ -145,6 +152,7 @@
                                  second)]
     (reformat-date cleaned-date-string)))
 
+;TODO: add link to the game to be able to varify contents later
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
         teams (parse-teams match-page)
@@ -160,13 +168,18 @@
        get-league-links-from-league-overview
        (map html->hickory)
        (map get-match-links-from-league)
+       flatten
+       ;TODO: check if match already exists
+       ;  identifier could be part of the link:
+       ;  /liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15021
        (map html->hickory)
        (map parse-match)
+       flatten
+       ; persist each game as a file. The name is the parameter part of its link
        ))
 
 (defn -main []
   (println "Hello, World!")
   (comment
-    (load-season league-overview-link)
-    ))
+    (load-season league-overview-link)))
 
