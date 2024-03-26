@@ -1,7 +1,8 @@
 (ns kicker-league-scanner.core
   (:require [clojure.string :as str]
             [hickory.core :as h]
-            [hickory.select :as s])
+            [hickory.select :as s]
+            [clojure.java.io :as io])
 
   (:gen-class))
 
@@ -18,6 +19,7 @@
 ;   filter_saison_id=11&ok=Los&task=veranstaltungen
 (def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def downloaded-matches-directory "downloaded-matches")
+(def csv-file-path "./all-games.csv")
 
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
@@ -222,25 +224,42 @@
   (let [game->csv-fn (partial game->csv match)]
     (map game->csv-fn games)))
 
-(defn match->csv-file! [match]
-  (for [game-string (match->csv match)]
-    (spit "all-games.csv" (str game-string "\n") :append true)))
+(defn match->csv-file!
+  ([match]
+   (match->csv-file! csv-file-path match))
+  ([file-path match]
+   (io/make-parents file-path)
+   (doseq [game-string (match->csv match)]
+     (spit file-path
+           (str game-string "\n")
+           :append true))))
 
-(defn match->edn-file! [match]
-  (let [filename (str (->> match
-                           :link
-                           (#(str/split % #"\?"))
-                           second)
-                      ".edn")
-        path (str downloaded-matches-directory "/" filename)]
-    (spit path
-          (clojure.core/pr-str match))))
+(defn match->edn-file!
+  ([match]
+   (match->edn-file! downloaded-matches-directory match))
+  ([path match]
+   (let [filename (str (->> match
+                            :link
+                            (#(str/split % #"\?"))
+                            second)
+                       ".edn")
+         path (str path "/" filename)]
+     (io/make-parents path)
+     (spit path
+           (clojure.core/pr-str match)))))
 
 
-(defn read-match [file-path]
+(defn read-match-as-edn [file-path]
   (->> file-path
-       read-string
+       slurp
+       read-string))
+
+(defn read-match-as-csv [file-path]
+  (->> file-path
        slurp))
+
+(defn delete-file [path]
+  (io/delete-file path true))
 
 (defn persist-match! [match]
   (match->edn-file! match)
@@ -251,7 +270,7 @@
    (new-match? downloaded-matches-directory filename))
   ([directory filename]
    (not (.exists
-          (clojure.java.io/file (str directory "/" filename))))))
+          (io/file (str directory "/" filename))))))
 
 (defn load-season [season-link]
   (->> season-link
@@ -265,6 +284,8 @@
        (map parse-match)
        (map persist-match!)))
 
+;TODO: change author
+; howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 (defn -main []
   (println "Hello, World!")
   (comment

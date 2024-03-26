@@ -201,3 +201,36 @@
            (first (match->csv match))))
     (is (= "2023-09-05;1;4;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR)"
            (nth (match->csv match) 3)))))
+
+(deftest saves-match-to-csv-file
+  (let [match {:date       "2023-09-05"
+               :home-team  "Flying Circus"
+               :guest-team "Kickertrupp (NR)"
+               :games      [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
+                            {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
+               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+               :match-day  1}
+        expected-csv-content "2023-09-05;1;1;Flying Circus;Felix;XXXX;6;2;Samuel;XXXX;Kickertrupp (NR)
+2023-09-05;1;4;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR)
+"
+        path "test/resources/test-all-games.csv"]
+    (delete-file path)
+    (match->csv-file! path match)
+    (is (= expected-csv-content
+           (read-match-as-csv path)))
+    (delete-file path)))
+
+(deftest saves-match-to-edn-file
+  (let [match {:date       "2023-09-05"
+               :home-team  "Flying Circus"
+               :guest-team "Kickertrupp (NR)"
+               :games      [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
+                            {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
+               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+               :match-day  1}
+        path "test/resources/task=begegnung_spielplan&veranstaltungid=229&id=15012.edn"]
+    (delete-file path)
+    (match->edn-file! "test/resources/" match)
+    (is (= match
+           (read-match-as-edn path)))
+    (delete-file path)))
