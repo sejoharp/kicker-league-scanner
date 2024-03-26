@@ -17,6 +17,7 @@
 ;
 ;   filter_saison_id=11&ok=Los&task=veranstaltungen
 (def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+(def downloaded-matches-directory "downloaded-matches")
 
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
@@ -40,10 +41,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -136,10 +137,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -172,7 +173,30 @@
      :home-team  (:home-team teams)
      :guest-team (:guest-team teams)
      :games      games
-     :link link}))
+     :link       link}))
+
+(defn new-match?
+  ([directory filename]
+   (not (.exists
+          (clojure.java.io/file (str directory "/" filename)))))
+  ([filename]
+   (new-match? downloaded-matches-directory filename))
+  )
+
+(defn save-match! [match]
+  (let [filename (str (->> match
+                           :link
+                           (#(str/split % #"\?"))
+                           second)
+                      ".edn")
+        path (str downloaded-matches-directory "/" filename)]
+    (spit path
+          (clojure.core/pr-str match))))
+
+(defn read-match [file-path]
+  (->> file-path
+       read-string
+       slurp))
 
 (defn load-season [season-link]
   (->> season-link
@@ -181,14 +205,10 @@
        (map html->hickory)
        (map get-match-links-from-league)
        flatten
-       ;TODO: check if match already exists
-       ;  identifier could be part of the link:
-       ;  /liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15021
+       (filter new-match?)
        (map html->hickory)
        (map parse-match)
-       flatten
-       ; persist each game as a file. The name is the parameter part of its link
-       ))
+       (map save-match!)))
 
 (defn -main []
   (println "Hello, World!")

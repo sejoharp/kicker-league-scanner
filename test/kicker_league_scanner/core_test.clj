@@ -7,7 +7,7 @@
     (is (= :document
            (:type parsed-html)))))
 
-(deftest ^:test-refresh/focus parses-leagues-from-overview
+(deftest parses-leagues-from-overview
   (let [parsed-html (html->hickory "test/resources/league-overview.html")]
     (is (= ["https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=veranstaltung&veranstaltungid=228"
             "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=veranstaltung&veranstaltungid=229"
@@ -27,7 +27,7 @@
   (is (= false
          (completed-match? ["_:_"]))))
 
-(deftest ^:test-refresh/focus parses-matches-from-league
+(deftest parses-matches-from-league
   (let [parsed-html (html->hickory "test/resources/league.html")]
     (is (= ["https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
             "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15018"
@@ -157,5 +157,11 @@
                          {:home {:names ["Ava"] :score 6} :guest {:names ["Ian"] :score 4} :position 14}
                          {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
                          {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
-            :link "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}
+            :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}
            (parse-match match-html)))))
+
+(deftest checks-file-existence
+  (is (false?
+         (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
+  (is (true?
+        (new-match? "test/resources" "non-existant-file.edn"))))
