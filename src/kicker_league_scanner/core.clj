@@ -199,28 +199,6 @@
      :link       link
      :match-day  match-day}))
 
-(defn new-match?
-  ([filename]
-   (new-match? downloaded-matches-directory filename))
-  ([directory filename]
-   (not (.exists
-          (clojure.java.io/file (str directory "/" filename))))))
-
-(defn save-match! [match]
-  (let [filename (str (->> match
-                           :link
-                           (#(str/split % #"\?"))
-                           second)
-                      ".edn")
-        path (str downloaded-matches-directory "/" filename)]
-    (spit path
-          (clojure.core/pr-str match))))
-
-(defn read-match [file-path]
-  (->> file-path
-       read-string
-       slurp))
-
 (defn game->csv [match game]
   (let [home-players (:names (:home game))
         guest-players (:names (:guest game))]
@@ -244,7 +222,37 @@
   (let [game->csv-fn (partial game->csv match)]
     (map game->csv-fn games)))
 
-;TODO: add the new matches to csv file
+(defn match->csv-file! [match]
+  (for [game-string (match->csv match)]
+    (spit "all-games.csv" (str game-string "\n") :append true)))
+
+(defn match->edn-file! [match]
+  (let [filename (str (->> match
+                           :link
+                           (#(str/split % #"\?"))
+                           second)
+                      ".edn")
+        path (str downloaded-matches-directory "/" filename)]
+    (spit path
+          (clojure.core/pr-str match))))
+
+
+(defn read-match [file-path]
+  (->> file-path
+       read-string
+       slurp))
+
+(defn persist-match! [match]
+  (match->edn-file! match)
+  (match->csv-file! match))
+
+(defn new-match?
+  ([filename]
+   (new-match? downloaded-matches-directory filename))
+  ([directory filename]
+   (not (.exists
+          (clojure.java.io/file (str directory "/" filename))))))
+
 (defn load-season [season-link]
   (->> season-link
        html->hickory
@@ -255,8 +263,7 @@
        (filter new-match?)
        (map html->hickory)
        (map parse-match)
-       (map save-match!)))
-
+       (map persist-match!)))
 
 (defn -main []
   (println "Hello, World!")
