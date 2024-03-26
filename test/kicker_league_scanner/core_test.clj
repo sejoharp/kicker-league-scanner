@@ -168,9 +168,9 @@
 
 (deftest checks-file-existence
   (is (false?
-       (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
+        (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
   (is (true?
-       (new-match? "test/resources" "non-existant-file.edn"))))
+        (new-match? "test/resources" "non-existant-file.edn"))))
 
 (deftest game->csv-test
   (let [match {:date       "2023-09-05"
@@ -187,7 +187,7 @@
     (is (= "2023-09-05;1;4;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR)"
            (game->csv match double-game)))))
 
-(deftest ^:test-refresh/focus match->csv-test
+(deftest match->csv-test
   (let [match {:date       "2023-09-05"
                :home-team  "Flying Circus"
                :guest-team "Kickertrupp (NR)"

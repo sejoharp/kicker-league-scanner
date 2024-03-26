@@ -41,10 +41,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -135,10 +135,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -204,7 +204,7 @@
    (new-match? downloaded-matches-directory filename))
   ([directory filename]
    (not (.exists
-         (clojure.java.io/file (str directory "/" filename))))))
+          (clojure.java.io/file (str directory "/" filename))))))
 
 (defn save-match! [match]
   (let [filename (str (->> match
@@ -240,9 +240,11 @@
                      "XXXX")
                    (:guest-team match)])))
 
-(defn match->csv [match]
-  (map (partial game->csv match) (:games match)))
+(defn match->csv [{games :games :as match}]
+  (let [game->csv-fn (partial game->csv match)]
+    (map game->csv-fn games)))
 
+;TODO: add the new matches to csv file
 (defn load-season [season-link]
   (->> season-link
        html->hickory
@@ -254,6 +256,7 @@
        (map html->hickory)
        (map parse-match)
        (map save-match!)))
+
 
 (defn -main []
   (println "Hello, World!")
