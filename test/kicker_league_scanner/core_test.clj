@@ -131,6 +131,11 @@
     (is (= "2023-09-05"
            (parse-date match-html)))))
 
+(deftest parses-match-day
+  (let [match-html (html->hickory "test/resources/match.html")]
+    (is (= 1
+           (parse-match-day match-html)))))
+
 (deftest parses-link
   (let [match-html (html->hickory "test/resources/match.html")]
     (is (= "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
@@ -157,7 +162,8 @@
                          {:home {:names ["Ava"] :score 6} :guest {:names ["Ian"] :score 4} :position 14}
                          {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
                          {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
-            :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}
+            :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+            :match-day  1}
            (parse-match match-html)))))
 
 (deftest checks-file-existence
@@ -165,3 +171,33 @@
        (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
   (is (true?
        (new-match? "test/resources" "non-existant-file.edn"))))
+
+(deftest game->csv-test
+  (let [match {:date       "2023-09-05"
+               :home-team  "Flying Circus"
+               :guest-team "Kickertrupp (NR)"
+               :games      [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
+                            {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
+               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+               :match-day  1}
+        single-game (first (:games match))
+        double-game (second (:games match))]
+    (is (= "2023-09-05;1;1;Flying Circus;Felix;XXXX;6;2;Samuel;XXXX;Kickertrupp (NR)"
+           (game->csv match single-game)))
+    (is (= "2023-09-05;1;4;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR)"
+           (game->csv match double-game)))))
+
+(deftest ^:test-refresh/focus match->csv-test
+  (let [match {:date       "2023-09-05"
+               :home-team  "Flying Circus"
+               :guest-team "Kickertrupp (NR)"
+               :games      [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
+                            {:home {:names ["Walter"] :score 2} :guest {:names ["Yasmine"] :score 6} :position 2}
+                            {:home {:names ["Walter" "Felix"] :score 3} :guest {:names ["Samuel" "Boran"] :score 6} :position 3}
+                            {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
+               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+               :match-day  1}]
+    (is (= "2023-09-05;1;1;Flying Circus;Felix;XXXX;6;2;Samuel;XXXX;Kickertrupp (NR)"
+           (first (match->csv match))))
+    (is (= "2023-09-05;1;4;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR)"
+           (nth (match->csv match) 3)))))

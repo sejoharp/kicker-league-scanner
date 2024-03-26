@@ -41,10 +41,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -100,8 +100,6 @@
                     :content
                     parse-scores)]
 
-    ;#TODO: Brauche ich noch Datum und Teamnamen?
-    ; Wie habe ich das bis jetzt gemacht?
     {:home     {:names home-player
                 :score (first scores)}
      :guest    {:names guest-player
@@ -137,10 +135,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -164,23 +162,49 @@
                                  second)]
     (reformat-date cleaned-date-string)))
 
+(defn parse-match-day [match-page]
+  (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
+                                                    (s/tag :div)))
+                               match-page)
+        date-string (->> date-snippet
+                         first
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first)
+        match-day (->> date-string
+                       str/trim
+                       (#(str/split % #" "))
+                       (#(nth % 3))
+                       (#(str/replace % #"\." ""))
+                       Integer/parseInt)]
+    match-day))
+
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
         teams (parse-teams match-page)
         games (parse-games match-page)
-        link (parse-link match-page)]
+        link (parse-link match-page)
+        match-day (parse-match-day match-page)]
     {:date       date
      :home-team  (:home-team teams)
      :guest-team (:guest-team teams)
      :games      games
-     :link       link}))
+     :link       link
+     :match-day  match-day}))
 
 (defn new-match?
   ([filename]
    (new-match? downloaded-matches-directory filename))
   ([directory filename]
    (not (.exists
-          (clojure.java.io/file (str directory "/" filename))))))
+         (clojure.java.io/file (str directory "/" filename))))))
 
 (defn save-match! [match]
   (let [filename (str (->> match
@@ -196,6 +220,28 @@
   (->> file-path
        read-string
        slurp))
+
+(defn game->csv [match game]
+  (let [home-players (:names (:home game))
+        guest-players (:names (:guest game))]
+    (str/join ";" [(:date match)
+                   (:match-day match)
+                   (:position game)
+                   (:home-team match)
+                   (first home-players)
+                   (if (= 2 (count home-players))
+                     (second home-players)
+                     "XXXX")
+                   (:score (:home game))
+                   (:score (:guest game))
+                   (first guest-players)
+                   (if (= 2 (count guest-players))
+                     (second guest-players)
+                     "XXXX")
+                   (:guest-team match)])))
+
+(defn match->csv [match]
+  (map (partial game->csv match) (:games match)))
 
 (defn load-season [season-link]
   (->> season-link
