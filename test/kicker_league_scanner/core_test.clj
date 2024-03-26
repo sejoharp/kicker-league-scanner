@@ -162,6 +162,6 @@
 
 (deftest checks-file-existence
   (is (false?
-         (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
+       (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
   (is (true?
-        (new-match? "test/resources" "non-existant-file.edn"))))
+       (new-match? "test/resources" "non-existant-file.edn"))))

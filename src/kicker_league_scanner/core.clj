@@ -176,12 +176,11 @@
      :link       link}))
 
 (defn new-match?
-  ([directory filename]
-   (not (.exists
-          (clojure.java.io/file (str directory "/" filename)))))
   ([filename]
    (new-match? downloaded-matches-directory filename))
-  )
+  ([directory filename]
+   (not (.exists
+          (clojure.java.io/file (str directory "/" filename))))))
 
 (defn save-match! [match]
   (let [filename (str (->> match
