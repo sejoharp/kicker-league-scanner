@@ -168,9 +168,13 @@
 
 (deftest checks-file-existence
   (is (false?
-        (new-match? "test/resources" "task=begegnung_spielplan&veranstaltungid=237&id=15478.edn")))
+        (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478")))
   (is (true?
-        (new-match? "test/resources" "non-existant-file.edn"))))
+        (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=non-existant"))))
+
+(deftest transforms-link-to-filename
+  (is (= "task=begegnung_spielplan-veranstaltungid=237-id=15478.edn"
+        (link->filename "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478"))))
 
 (deftest game->csv-test
   (let [match {:date       "2023-09-05"
@@ -228,7 +232,7 @@
                             {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
                :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
                :match-day  1}
-        path "test/resources/task=begegnung_spielplan&veranstaltungid=229&id=15012.edn"]
+        path "test/resources/task=begegnung_spielplan-veranstaltungid=229-id=15012.edn"]
     (delete-file path)
     (match->edn-file! "test/resources/" match)
     (is (= match

@@ -17,7 +17,7 @@
 ;   Content-Length: [length]
 ;
 ;   filter_saison_id=11&ok=Los&task=veranstaltungen
-(def league-overview-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+(def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def downloaded-matches-directory "downloaded-matches")
 (def csv-file-path "./all-games.csv")
 
@@ -234,15 +234,20 @@
            (str game-string "\n")
            :append true))))
 
+(defn link->filename [link]
+  (-> link
+      (#(str/split % #"\?"))
+      second
+      (#(str/replace % #"&" "-"))
+      (#(str % ".edn"))))
+
 (defn match->edn-file!
   ([match]
    (match->edn-file! downloaded-matches-directory match))
   ([path match]
-   (let [filename (str (->> match
-                            :link
-                            (#(str/split % #"\?"))
-                            second)
-                       ".edn")
+   (let [filename (->> match
+                       :link
+                       link->filename)
          path (str path "/" filename)]
      (io/make-parents path)
      (spit path
@@ -265,12 +270,19 @@
   (match->edn-file! match)
   (match->csv-file! match))
 
+(defn log [message item]
+  (print message)
+  item)
+
+
+
 (defn new-match?
-  ([filename]
-   (new-match? downloaded-matches-directory filename))
-  ([directory filename]
-   (not (.exists
-          (io/file (str directory "/" filename))))))
+  ([link]
+   (new-match? downloaded-matches-directory link))
+  ([directory link]
+   (let [filename (link->filename link)]
+     (not (.exists
+            (io/file (str directory "/" filename)))))))
 
 (defn load-season [season-link]
   (->> season-link
@@ -282,6 +294,7 @@
        (filter new-match?)
        (map html->hickory)
        (map parse-match)
+
        (map persist-match!)))
 
 ;TODO: change author
@@ -289,5 +302,5 @@
 (defn -main []
   (println "Hello, World!")
   (comment
-    (load-season league-overview-link)))
+    (load-season league-overview-season-link)))
 
