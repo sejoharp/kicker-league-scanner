@@ -15,4 +15,5 @@ pom.xml.asc
 .hg/
 downloaded-matches/*
 all-games.csv
+all-games*.xz
 

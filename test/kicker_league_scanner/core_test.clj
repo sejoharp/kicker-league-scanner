@@ -100,6 +100,47 @@
             :position 3}
            (parse-game double-game)))))
 
+(def game-without-images {:attrs   {:class "sectiontableentry1"},
+                          :content ["\n                                "
+                                    {:attrs   {:align "center", :nowrap ""},
+                                     :content ["1"],
+                                     :tag     :td,
+                                     :type    :element}
+                                    "\n\n                                "
+                                    {:attrs   nil,
+                                     :content ["\n                                    "
+                                               {:attrs   {:href "/liga/ergebnisse-und-tabellen?task=spieler_details&id=2331"},
+                                                :content ["Isla"],
+                                                :tag     :a,
+                                                :type    :element}
+                                               "\n                                "],
+                                     :tag     :td,
+                                     :type    :element}
+                                    "\n\n                                "
+                                    {:attrs   {:align "center", :nowrap ""},
+                                     :content ["6:1"],
+                                     :tag     :td,
+                                     :type    :element}
+                                    "\n\n                                "
+                                    {:attrs   nil,
+                                     :content ["\n                                    "
+                                               {:attrs   {:href "/liga/ergebnisse-und-tabellen?task=spieler_details&id=1040"},
+                                                :content ["Alice"],
+                                                :tag     :a,
+                                                :type    :element}
+                                               "\n                                "],
+                                     :tag     :td,
+                                     :type    :element}
+                                    "\n\n                            "],
+                          :tag     :tr,
+                          :type    :element})
+
+(deftest parses-game-without-images
+  (is (= {:home     {:names ["Isla"] :score 6}
+          :guest    {:names ["Alice"] :score 1}
+          :position 1}
+         (parse-game game-without-images))))
+
 (deftest parses-games-from-match
   (let [parsed-html (html->hickory "test/resources/match.html")]
     (is (= [{:home {:names ["Felix"] :score 6} :guest {:names ["Samuel"] :score 2} :position 1}
@@ -119,6 +160,13 @@
             {:home {:names ["George" "Felix"] :score 2} :guest {:names ["Samuel" "Derek"] :score 6} :position 15}
             {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
            (parse-games parsed-html)))))
+
+(deftest parses-all-games-without-images
+  (let [games-without-images (html->hickory "test/resources/match-with-unexpected-missing-games.html")]
+    (is (= {:guest    {:names ["Alice" "Black"], :score 2},
+            :home     {:names ["Isla" "Bella"], :score 6},
+            :position 3}
+           (nth (parse-games games-without-images) 2)))))
 
 (deftest parses-teams
   (let [match-html (html->hickory "test/resources/match.html")]
@@ -166,15 +214,37 @@
             :match-day  1}
            (parse-match match-html)))))
 
+(deftest reads-html-and-parses-match
+  (let [match-link "test/resources/match.html"
+        match (parse-match-from-link-fn match-link)]
+    (is (true? (contains? match :date)))
+    (is (true? (contains? match :home-team)))
+    (is (true? (contains? match :guest-team)))
+    (is (true? (contains? match :games)))
+    (is (true? (contains? match :link)))
+    (is (true? (contains? match :match-day)))
+    (is (= 16 (count (:games match))))))
+
+(deftest reads-html-and-parses-match-and-finds-all-games
+  (let [match-link "test/resources/match-with-unexpected-missing-games.html"
+        match (parse-match-from-link-fn match-link)]
+    (is (true? (contains? match :date)))
+    (is (true? (contains? match :home-team)))
+    (is (true? (contains? match :guest-team)))
+    (is (true? (contains? match :games)))
+    (is (true? (contains? match :link)))
+    (is (true? (contains? match :match-day)))
+    (is (= 16 (count (:games match))))))
+
 (deftest checks-file-existence
   (is (false?
-        (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478")))
+       (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478")))
   (is (true?
-        (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=non-existant"))))
+       (new-match? "test/resources" "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=non-existant"))))
 
 (deftest transforms-link-to-filename
   (is (= "task=begegnung_spielplan-veranstaltungid=237-id=15478.edn"
-        (link->filename "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478"))))
+         (link->filename "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478"))))
 
 (deftest game->csv-test
   (let [match {:date       "2023-09-05"

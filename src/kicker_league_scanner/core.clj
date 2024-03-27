@@ -1,8 +1,8 @@
 (ns kicker-league-scanner.core
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [hickory.core :as h]
-            [hickory.select :as s]
-            [clojure.java.io :as io])
+            [hickory.select :as s])
 
   (:gen-class))
 
@@ -43,10 +43,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -76,11 +76,37 @@
     (parse-double-player player-snippet)
     (parse-single-player player-snippet)))
 
-(defn parse-scores [scores-snippet]
+(defn parse-scores-from-score-array [scores-snippet]
   (->> scores-snippet
        first
        (#(str/split % #":"))
        (map #(Integer/parseInt %))))
+
+(defn no-images? [game-snippet]
+  (= 9 (count game-snippet)))
+(defn parse-home-players [game-snippet]
+  (->> game-snippet
+       (#(nth % (if (no-images? game-snippet)
+                  3
+                  5)))
+       :content
+       parse-player))
+
+(defn parse-guest-players [game-snippet]
+  (->> game-snippet
+       (#(nth % (if (no-images? game-snippet)
+                  7
+                  9)))
+       :content
+       parse-player))
+
+(defn parse-scores [game-snippet]
+  (->> game-snippet
+       (#(nth % (if (no-images? game-snippet)
+                  5
+                  7)))
+       :content
+       parse-scores-from-score-array))
 
 (defn parse-game [parsed-html]
   (let [game-snippet (:content parsed-html)
@@ -89,19 +115,9 @@
                       :content
                       first
                       Integer/parseInt)
-        home-player (->> game-snippet
-                         (#(nth % 5))
-                         :content
-                         parse-player)
-        guest-player (->> game-snippet
-                          (#(nth % 9))
-                          :content
-                          parse-player)
-        scores (->> game-snippet
-                    (#(nth % 7))
-                    :content
-                    parse-scores)]
-
+        home-player (parse-home-players game-snippet)
+        guest-player (parse-guest-players game-snippet)
+        scores (parse-scores game-snippet)]
     {:home     {:names home-player
                 :score (first scores)}
      :guest    {:names guest-player
@@ -137,10 +153,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -253,7 +269,6 @@
      (spit path
            (clojure.core/pr-str match)))))
 
-
 (defn read-match-as-edn [file-path]
   (->> file-path
        slurp
@@ -270,11 +285,9 @@
   (match->edn-file! match)
   (match->csv-file! match))
 
-(defn log [message item]
-  (print message)
-  item)
-
-
+(defn log [link]
+  (prn (str "parsing " link))
+  link)
 
 (defn new-match?
   ([link]
@@ -282,7 +295,9 @@
   ([directory link]
    (let [filename (link->filename link)]
      (not (.exists
-            (io/file (str directory "/" filename)))))))
+           (io/file (str directory "/" filename)))))))
+
+(def parse-match-from-link-fn (comp parse-match html->hickory log))
 
 (defn load-season [season-link]
   (->> season-link
@@ -292,9 +307,9 @@
        (map get-match-links-from-league)
        flatten
        (filter new-match?)
-       (map html->hickory)
-       (map parse-match)
-
+       (map parse-match-from-link-fn)
+       ;TODO: map does not make sense, because the function does not return something new
+       ;  use doseq?
        (map persist-match!)))
 
 ;TODO: change author
