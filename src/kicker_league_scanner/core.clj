@@ -270,6 +270,10 @@
            (str game-string "\n")
            :append true))))
 
+(defn matches->csv-files! [matches]
+  (doseq [match matches]
+    (match->csv-file! match)))
+
 (defn link->filename [link]
   (-> link
       (#(str/split % #"\?"))
@@ -289,21 +293,21 @@
      (spit path
            (clojure.core/pr-str match)))))
 
-(defn read-match-as-edn [file-path]
+(defn matches->edn-files! [matches]
+  (doseq [match matches]
+    (match->edn-file! match)))
+
+(defn read-match-from-edn [file-path]
   (->> file-path
        slurp
        read-string))
 
-(defn read-match-as-csv [file-path]
+(defn read-match-from-csv [file-path]
   (->> file-path
        slurp))
 
 (defn delete-file [path]
   (io/delete-file path true))
-
-(defn persist-match! [match]
-  (match->edn-file! match)
-  (match->csv-file! match))
 
 (defn log [link]
   (prn (str "parsing " link))
@@ -328,9 +332,7 @@
        flatten
        (filter new-match?)
        (map parse-match-from-link-fn)
-       ;TODO: map does not make sense, because the function does not return something new
-       ;  use doseq?
-       (map persist-match!)))
+       (matches->edn-files!)))
 
 ;TODO: change author
 ; howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680

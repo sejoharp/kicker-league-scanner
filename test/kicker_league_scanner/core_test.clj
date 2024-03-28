@@ -291,7 +291,7 @@
     (delete-file path)
     (match->csv-file! path match)
     (is (= expected-csv-content
-           (read-match-as-csv path)))
+           (read-match-from-csv path)))
     (delete-file path)))
 
 (deftest saves-match-to-edn-file
@@ -306,5 +306,5 @@
     (delete-file path)
     (match->edn-file! "test/resources/" match)
     (is (= match
-           (read-match-as-edn path)))
+           (read-match-from-edn path)))
     (delete-file path)))
