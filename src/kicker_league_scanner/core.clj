@@ -63,10 +63,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -176,10 +176,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -227,6 +227,26 @@
                        Integer/parseInt)]
     match-day))
 
+(defn valid-match? [match-page]
+  (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
+                                                    (s/tag :div)))
+                               match-page)
+        date-string (->> date-snippet
+                         first
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first
+                         :content
+                         second
+                         :content
+                         first)
+        cleaned-date-string (->> date-string
+                                 str/trim)]
+    (not (str/starts-with? cleaned-date-string "N/A"))))
+
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
         teams (parse-teams match-page)
@@ -239,6 +259,11 @@
      :games      games
      :link       link
      :match-day  match-day}))
+
+(defn parse-valid-match [match-page]
+  (if (valid-match? match-page)
+    (parse-match match-page)
+    nil))
 
 (defn game->csv [match game]
   (let [home-players (:names (:home game))
@@ -324,6 +349,10 @@
   (prn (str "new matches found: " (count matches)))
   matches)
 
+(defn log-valid-matches-count [matches]
+  (prn (str "valid matches found: " (count matches)))
+  matches)
+
 (defn log-parsed-matches-count [matches]
   (prn (str "new matches parsed: " (count matches)))
   matches)
@@ -334,9 +363,12 @@
   ([directory link]
    (let [filename (link->filename link)]
      (not (.exists
-            (io/file (str directory "/" filename)))))))
+           (io/file (str directory "/" filename)))))))
 
-(def parse-match-from-link-fn (comp parse-match html->hickory log-parsing-link))
+(def parse-match-from-link-fn (comp
+                               parse-valid-match
+                               html->hickory
+                               log-parsing-link))
 
 (defn load-season [season]
   (->> season
@@ -350,6 +382,8 @@
        log-new-matches-count
        (map parse-match-from-link-fn)
        log-parsed-matches-count
+       (filter some?)
+       log-valid-matches-count
        (matches->edn-files!)))
 
 ;TODO: change author

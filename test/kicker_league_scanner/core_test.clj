@@ -100,7 +100,7 @@
             :position 3}
            (parse-game double-game)))))
 
-(deftest ^:test-refresh/focus parses-game
+(deftest parses-game-without-scores
   (let [game-snippets (find-game-snippets (html->hickory "test/resources/match-missing-scores.html"))
         single-game (first game-snippets)
         double-game (nth game-snippets 2)]
@@ -201,8 +201,15 @@
     (is (= "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
            (parse-link match-html)))))
 
+(deftest ^:test-refresh/focus detects-invalid-matches
+  (let [valid-match-html (html->hickory "test/resources/match.html")
+        missing-date-match-html (html->hickory "test/resources/match-missing-date.html")]
+    (is (true? (valid-match? valid-match-html)))
+    (is (false? (valid-match? missing-date-match-html)))))
+
 (deftest parses-match
-  (let [match-html (html->hickory "test/resources/match.html")]
+  (let [match-html (html->hickory "test/resources/match.html")
+        invalid-match-html (html->hickory "test/resources/match-missing-date.html")]
     (is (= {:date       "2023-09-05"
             :home-team  "Flying Circus"
             :guest-team "Kickertrupp (NR)"
@@ -224,7 +231,8 @@
                          {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
             :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
             :match-day  1}
-           (parse-match match-html)))))
+           (parse-match match-html)))
+    (is (nil? (parse-valid-match invalid-match-html)))))
 
 (deftest reads-html-and-parses-match
   (let [match-link "test/resources/match.html"
