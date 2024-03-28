@@ -298,9 +298,13 @@
            (str game-string "\n")
            :append true))))
 
-(defn matches->csv-files! [matches]
-  (doseq [match matches]
-    (match->csv-file! match)))
+(defn matches->csv-file!
+  ([matches]
+   (doseq [match matches]
+     (match->csv-file! match)))
+  ([file-path matches]
+   (doseq [match matches]
+     (match->csv-file! file-path match))))
 
 (defn link->filename [link]
   (-> link
@@ -336,6 +340,16 @@
 
 (defn delete-file [path]
   (io/delete-file path true))
+
+(defn read-directory [directory] (clojure.java.io/file directory))
+
+(defn read-match-files [directory] (rest (file-seq (read-directory directory))))
+
+(defn save-all-matches-to-csv [directory]
+  (->> directory
+       read-match-files
+       (map read-match-from-edn)
+       (matches->csv-file! "./all-games-bis-2016.csv")))
 
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
