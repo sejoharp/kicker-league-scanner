@@ -63,10 +63,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -104,6 +104,7 @@
 
 (defn no-images? [game-snippet]
   (= 9 (count game-snippet)))
+
 (defn parse-home-players [game-snippet]
   (->> game-snippet
        (#(nth % (if (no-images? game-snippet)
@@ -173,10 +174,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -309,9 +310,21 @@
 (defn delete-file [path]
   (io/delete-file path true))
 
-(defn log [link]
+(defn log-parsing-link [link]
   (prn (str "parsing " link))
   link)
+
+(defn log-matches-count [matches]
+  (prn (str "matches found: " (count matches)))
+  matches)
+
+(defn log-new-matches-count [matches]
+  (prn (str "new matches found: " (count matches)))
+  matches)
+
+(defn log-parsed-matches-count [matches]
+  (prn (str "new matches parsed: " (count matches)))
+  matches)
 
 (defn new-match?
   ([link]
@@ -319,9 +332,9 @@
   ([directory link]
    (let [filename (link->filename link)]
      (not (.exists
-           (io/file (str directory "/" filename)))))))
+            (io/file (str directory "/" filename)))))))
 
-(def parse-match-from-link-fn (comp parse-match html->hickory log))
+(def parse-match-from-link-fn (comp parse-match html->hickory log-parsing-link))
 
 (defn load-season [season]
   (->> season
@@ -330,8 +343,11 @@
        (map html->hickory)
        (map get-match-links-from-league)
        flatten
+       log-matches-count
        (filter new-match?)
+       log-new-matches-count
        (map parse-match-from-link-fn)
+       log-parsed-matches-count
        (matches->edn-files!)))
 
 ;TODO: change author
