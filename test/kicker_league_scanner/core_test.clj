@@ -100,6 +100,18 @@
             :position 3}
            (parse-game double-game)))))
 
+(deftest ^:test-refresh/focus parses-game
+  (let [game-snippets (find-game-snippets (html->hickory "test/resources/match-missing-scores.html"))
+        single-game (first game-snippets)
+        double-game (nth game-snippets 2)]
+    (is (= {:home     {:names ["Wendy"] :score nil}
+            :guest    {:names ["Thomas"] :score nil}
+            :position 1}
+           (parse-game single-game)))
+    (is (= {:home     {:names ["Olivia" "Henry"] :score nil}
+            :guest    {:names ["Thomas" "Carter"] :score nil}
+            :position 3}
+           (parse-game double-game)))))
 (def game-without-images {:attrs   {:class "sectiontableentry1"},
                           :content ["\n                                "
                                     {:attrs   {:align "center", :nowrap ""},

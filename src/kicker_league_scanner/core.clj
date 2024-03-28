@@ -97,10 +97,12 @@
     (parse-single-player player-snippet)))
 
 (defn parse-scores-from-score-array [scores-snippet]
-  (->> scores-snippet
-       first
-       (#(str/split % #":"))
-       (map #(Integer/parseInt %))))
+  (if (nil? scores-snippet)
+    [nil nil]
+    (->> scores-snippet
+         first
+         (#(str/split % #":"))
+         (map #(Integer/parseInt %)))))
 
 (defn no-images? [game-snippet]
   (= 9 (count game-snippet)))
