@@ -1,5 +1,6 @@
 (ns kicker-league-scanner.core
-  (:require [clojure.java.io :as io]
+  (:require [clj-http.client :as client]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h]
             [hickory.select :as s])
@@ -10,14 +11,33 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
-; to select other seasons, do the following post request:
-;   POST /liga/ergebnisse-und-tabellen HTTP/1.1
-;   Host: example.com  (replace example.com with the actual host)
-;   Content-Type: application/x-www-form-urlencoded
-;   Content-Length: [length]
-;
-;   filter_saison_id=11&ok=Los&task=veranstaltungen
+(def season-year->id {"2023/24" "24"
+                      "2022/23" "23"
+                      "2022"    "22"
+                      "2019/20" "20"
+                      "2018/19" "16"
+                      "2018"    "13"
+                      "2017"    "12"
+                      "2016"    "11"
+                      "2015"    "9"
+                      "2014"    "8"
+                      "2013"    "7"
+                      "2012"    "4"
+                      "2011"    "3"
+                      "2010"    "2"
+                      "2009"    "1"})
+
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+
+(defn get-season [season]
+  (->> {:form-params {:filter_saison_id (get season-year->id season)
+                      :ok               "Los"
+                      :task             "veranstaltungen"}}
+       (client/post league-overview-season-link)
+       :body
+       h/parse
+       h/as-hickory))
+
 (def downloaded-matches-directory "downloaded-matches")
 (def csv-file-path "./all-games.csv")
 
@@ -299,9 +319,9 @@
 
 (def parse-match-from-link-fn (comp parse-match html->hickory log))
 
-(defn load-season [season-link]
-  (->> season-link
-       html->hickory
+(defn load-season [season]
+  (->> season
+       get-season
        get-league-links-from-league-overview
        (map html->hickory)
        (map get-match-links-from-league)
@@ -317,5 +337,5 @@
 (defn -main []
   (println "Hello, World!")
   (comment
-    (load-season league-overview-season-link)))
+    (load-season "2023/24")))
 
