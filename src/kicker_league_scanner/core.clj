@@ -350,8 +350,9 @@
 
 (defn save-all-matches-to-csv [{:keys [csv-file-path match-directory-path]
                                 :as   options}]
-  (prn "exporting " options)
-  #_(->> match-directory-path
+  (prn "exporting matches to csv ..")
+  (prn "options: " options)
+  (->> match-directory-path
          read-match-files
          (map read-match-from-edn)
          (matches->csv-file! "./all-games-bis-2016.csv")))
@@ -391,8 +392,9 @@
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]
-  (prn "downloading " season " .. " options)
-  #_(->> season
+  (prn "downloading matches ..")
+  (prn "options: " options)
+  (->> season
          get-season
          get-league-links-from-league-overview
          (map html->hickory)
