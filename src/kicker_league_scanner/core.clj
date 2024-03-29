@@ -367,13 +367,10 @@
   (prn (str "new matches parsed: " (count matches)))
   matches)
 
-(defn new-match?
-  ([link]
-   (new-match? default-downloaded-matches-directory link))
-  ([directory link]
-   (let [filename (link->filename link)]
-     (not (.exists
-            (io/file (str directory "/" filename)))))))
+(defn new-match? [directory link]
+  (let [filename (link->filename link)]
+    (not (.exists
+           (io/file (str directory "/" filename))))))
 
 (def parse-match-from-link-fn (comp
                                 parse-valid-match
@@ -391,7 +388,7 @@
        (map get-match-links-from-league)
        flatten
        log-matches-count
-       (filter new-match?)
+       (filter (partial new-match? match-directory-path))
        log-new-matches-count
        (map parse-match-from-link-fn)
        log-parsed-matches-count
