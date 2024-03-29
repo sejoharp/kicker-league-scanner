@@ -1,5 +1,6 @@
 (ns kicker-league-scanner.core
-  (:require [clj-http.client :as client]
+  (:require [cli-matic.core :as cli]
+            [clj-http.client :as client]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h]
@@ -28,6 +29,8 @@
                       "2009"    "1"})
 
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+
+(def current-season "2023/24")
 
 (defn get-season [season]
   (->> {:form-params {:filter_saison_id (get season-year->id season)
@@ -345,11 +348,13 @@
 
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
-(defn save-all-matches-to-csv [directory]
-  (->> directory
-       read-match-files
-       (map read-match-from-edn)
-       (matches->csv-file! "./all-games-bis-2016.csv")))
+(defn save-all-matches-to-csv [{:keys [csv-file-path match-directory-path]
+                                :as   options}]
+  (prn "exporting " options)
+  #_(->> match-directory-path
+         read-match-files
+         (map read-match-from-edn)
+         (matches->csv-file! "./all-games-bis-2016.csv")))
 
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
@@ -384,26 +389,58 @@
                                html->hickory
                                log-parsing-link))
 
-(defn load-season [season]
-  (->> season
-       get-season
-       get-league-links-from-league-overview
-       (map html->hickory)
-       (map get-match-links-from-league)
-       flatten
-       log-matches-count
-       (filter new-match?)
-       log-new-matches-count
-       (map parse-match-from-link-fn)
-       log-parsed-matches-count
-       (filter some?)
-       log-valid-matches-count
-       (matches->edn-files!)))
+(defn load-season [{:keys [season match-directory-path]
+                    :as   options}]
+  (prn "downloading " season " .. " options)
+  #_(->> season
+         get-season
+         get-league-links-from-league-overview
+         (map html->hickory)
+         (map get-match-links-from-league)
+         flatten
+         log-matches-count
+         (filter new-match?)
+         log-new-matches-count
+         (map parse-match-from-link-fn)
+         log-parsed-matches-count
+         (filter some?)
+         log-valid-matches-count
+         (matches->edn-files!)))
+
+(def cli-config
+  {:app         {:command     "kicker-league-scanner"
+                 :description "A command-line kicker stats scanner"
+                 :version     "0.0.1"}
+   :global-opts [{:option  "match-directory-path"
+                  :short   "mdp"
+                  :as      (str "Location of all matches. e.g. " downloaded-matches-directory)
+                  :type    :string
+                  :default downloaded-matches-directory}]
+   :commands    [{:command     "download" :short "d"
+                  :description ["downloads all matches for the given season"]
+                  :opts        [{:option  "season"
+                                 :short   "s"
+                                 :as      "target season"
+                                 :type    :string
+                                 :default current-season}]
+                  :runs        load-season}
+                 {:command     "export" :short "s"
+                  :description "exports all matches to a given csv file"
+                  :opts        [{:option  "target-csv-file"
+                                 :short   "tcf"
+                                 :as      (str "Location for the csv file with all games. e.g. " csv-file-path)
+                                 :type    :string
+                                 :default csv-file-path}]
+                  :runs        save-all-matches-to-csv}]})
+
+;TODO: swith cli handling to cli-matic, because it supports commands.
+;  example: https://github.com/l3nz/cli-matic/blob/master/examples/clj/toycalc.clj
 
 ;TODO: change author
-; howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
-(defn -main []
-  (println "Hello, World!")
+;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
+(defn -main [& args]
+  (cli/run-cmd args cli-config)
   (comment
-    (load-season "2023/24")))
+    (load-season {:match-directory-path downloaded-matches-directory
+                  :season               current-season})))
 

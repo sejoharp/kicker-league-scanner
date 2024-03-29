@@ -26,7 +26,7 @@
             "test" ["do" ["nsorg" "--replace"] ["cljfmt" "fix"] "test"]}
 
   :profiles {:uberjar {:aot :all}
-             :dev     {:dependencies []
+             :dev     {:dependencies [[cli-matic "0.5.4"]]
                        :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                       [lein-ancient "0.6.14"]
                                       [lein-nvd "0.5.4"]
