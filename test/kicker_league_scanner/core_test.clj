@@ -201,7 +201,7 @@
     (is (= "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
            (parse-link match-html)))))
 
-(deftest ^:test-refresh/focus detects-invalid-matches
+(deftest detects-invalid-matches
   (let [valid-match-html (html->hickory "test/resources/match.html")
         missing-date-match-html (html->hickory "test/resources/match-missing-date.html")]
     (is (true? (valid-match? valid-match-html)))

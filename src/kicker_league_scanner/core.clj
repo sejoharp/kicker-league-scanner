@@ -8,10 +8,6 @@
 
   (:gen-class))
 
-(defn html->hickory [overview-link]
-  (let [html (slurp overview-link)]
-    (h/as-hickory (h/parse html))))
-
 (def season-year->id {"2023/24" "24"
                       "2022/23" "23"
                       "2022"    "22"
@@ -27,10 +23,14 @@
                       "2011"    "3"
                       "2010"    "2"
                       "2009"    "1"})
-
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
-
 (def current-season "2023/24")
+(def default-downloaded-matches-directory "downloaded-matches")
+(def default-csv-file-path "./all-games.csv")
+
+(defn html->hickory [overview-link]
+  (let [html (slurp overview-link)]
+    (h/as-hickory (h/parse html))))
 
 (defn get-season [season]
   (->> {:form-params {:filter_saison_id (get season-year->id season)
@@ -40,9 +40,6 @@
        :body
        h/parse
        h/as-hickory))
-
-(def downloaded-matches-directory "downloaded-matches")
-(def csv-file-path "./all-games.csv")
 
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
@@ -66,10 +63,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -179,10 +176,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -291,23 +288,16 @@
   (let [game->csv-fn (partial game->csv match)]
     (map game->csv-fn games)))
 
-(defn match->csv-file!
-  ([match]
-   (match->csv-file! csv-file-path match))
-  ([file-path match]
-   (io/make-parents file-path)
-   (doseq [game-string (match->csv match)]
-     (spit file-path
-           (str game-string "\n")
-           :append true))))
+(defn match->csv-file! [file-path match]
+  (io/make-parents file-path)
+  (doseq [game-string (match->csv match)]
+    (spit file-path
+          (str game-string "\n")
+          :append true)))
 
-(defn matches->csv-file!
-  ([matches]
-   (doseq [match matches]
-     (match->csv-file! match)))
-  ([file-path matches]
-   (doseq [match matches]
-     (match->csv-file! file-path match))))
+(defn matches->csv-file! [file-path matches]
+  (doseq [match matches]
+    (match->csv-file! file-path match)))
 
 (defn link->filename [link]
   (-> link
@@ -318,7 +308,7 @@
 
 (defn match->edn-file!
   ([match]
-   (match->edn-file! downloaded-matches-directory match))
+   (match->edn-file! default-downloaded-matches-directory match))
   ([path match]
    (let [filename (->> match
                        :link
@@ -353,9 +343,9 @@
   (prn "exporting matches to csv ..")
   (prn "options: " options)
   (->> match-directory-path
-         read-match-files
-         (map read-match-from-edn)
-         (matches->csv-file! "./all-games-bis-2016.csv")))
+       read-match-files
+       (map read-match-from-edn)
+       (matches->csv-file! csv-file-path)))
 
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
@@ -379,35 +369,35 @@
 
 (defn new-match?
   ([link]
-   (new-match? downloaded-matches-directory link))
+   (new-match? default-downloaded-matches-directory link))
   ([directory link]
    (let [filename (link->filename link)]
      (not (.exists
-           (io/file (str directory "/" filename)))))))
+            (io/file (str directory "/" filename)))))))
 
 (def parse-match-from-link-fn (comp
-                               parse-valid-match
-                               html->hickory
-                               log-parsing-link))
+                                parse-valid-match
+                                html->hickory
+                                log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]
   (prn "downloading matches ..")
   (prn "options: " options)
   (->> season
-         get-season
-         get-league-links-from-league-overview
-         (map html->hickory)
-         (map get-match-links-from-league)
-         flatten
-         log-matches-count
-         (filter new-match?)
-         log-new-matches-count
-         (map parse-match-from-link-fn)
-         log-parsed-matches-count
-         (filter some?)
-         log-valid-matches-count
-         (matches->edn-files!)))
+       get-season
+       get-league-links-from-league-overview
+       (map html->hickory)
+       (map get-match-links-from-league)
+       flatten
+       log-matches-count
+       (filter new-match?)
+       log-new-matches-count
+       (map parse-match-from-link-fn)
+       log-parsed-matches-count
+       (filter some?)
+       log-valid-matches-count
+       (matches->edn-files!)))
 
 (def cli-config
   {:app         {:command     "kicker-league-scanner"
@@ -415,9 +405,9 @@
                  :version     "0.0.1"}
    :global-opts [{:option  "match-directory-path"
                   :short   "mdp"
-                  :as      (str "Location of all matches. e.g. " downloaded-matches-directory)
+                  :as      (str "Location of all matches. e.g. " default-downloaded-matches-directory)
                   :type    :string
-                  :default downloaded-matches-directory}]
+                  :default default-downloaded-matches-directory}]
    :commands    [{:command     "download" :short "d"
                   :description ["downloads all matches for the given season"]
                   :opts        [{:option  "season"
@@ -430,19 +420,19 @@
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
                                  :short   "tcf"
-                                 :as      (str "Location for the csv file with all games. e.g. " csv-file-path)
+                                 :as      (str "Location for the csv file with all games. e.g. " default-csv-file-path)
                                  :type    :string
-                                 :default csv-file-path}]
+                                 :default default-csv-file-path}]
                   :runs        save-all-matches-to-csv}]})
-
-;TODO: swith cli handling to cli-matic, because it supports commands.
-;  example: https://github.com/l3nz/cli-matic/blob/master/examples/clj/toycalc.clj
+;TODO: move io files to different namespace
 
 ;TODO: change author
 ;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 (defn -main [& args]
   (cli/run-cmd args cli-config)
   (comment
-    (load-season {:match-directory-path downloaded-matches-directory
-                  :season               current-season})))
+    (load-season {:match-directory-path default-downloaded-matches-directory
+                  :season               current-season})
+    (save-all-matches-to-csv {:match-directory-path default-downloaded-matches-directory
+                              :target-csv-file      default-csv-file-path})))
 
