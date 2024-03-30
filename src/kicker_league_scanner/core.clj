@@ -1,10 +1,10 @@
 (ns kicker-league-scanner.core
   (:require [cli-matic.core :as cli]
             [clj-http.client :as client]
-            [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h]
-            [hickory.select :as s])
+            [hickory.select :as s]
+            [kicker-league-scanner.io :as io])
 
   (:gen-class))
 
@@ -23,10 +23,7 @@
                       "2011"    "3"
                       "2010"    "2"
                       "2009"    "1"})
-(def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def current-season "2023/24")
-(def default-downloaded-matches-directory "downloaded-matches")
-(def default-csv-file-path "./all-games.csv")
 
 (defn html->hickory [overview-link]
   (let [html (slurp overview-link)]
@@ -36,7 +33,7 @@
   (->> {:form-params {:filter_saison_id (get season-year->id season)
                       :ok               "Los"
                       :task             "veranstaltungen"}}
-       (client/post league-overview-season-link)
+       (client/post io/league-overview-season-link)
        :body
        h/parse
        h/as-hickory))
@@ -265,88 +262,6 @@
     (parse-match match-page)
     nil))
 
-(defn game->csv [match game]
-  (let [home-players (:names (:home game))
-        guest-players (:names (:guest game))]
-    (str/join ";" [(:date match)
-                   (:match-day match)
-                   (:position game)
-                   (:home-team match)
-                   (first home-players)
-                   (if (= 2 (count home-players))
-                     (second home-players)
-                     "XXXX")
-                   (:score (:home game))
-                   (:score (:guest game))
-                   (first guest-players)
-                   (if (= 2 (count guest-players))
-                     (second guest-players)
-                     "XXXX")
-                   (:guest-team match)])))
-
-(defn match->csv [{games :games :as match}]
-  (let [game->csv-fn (partial game->csv match)]
-    (map game->csv-fn games)))
-
-(defn match->csv-file! [file-path match]
-  (io/make-parents file-path)
-  (doseq [game-string (match->csv match)]
-    (spit file-path
-          (str game-string "\n")
-          :append true)))
-
-(defn matches->csv-file! [file-path matches]
-  (doseq [match matches]
-    (match->csv-file! file-path match)))
-
-(defn link->filename [link]
-  (-> link
-      (#(str/split % #"\?"))
-      second
-      (#(str/replace % #"&" "-"))
-      (#(str % ".edn"))))
-
-(defn match->edn-file!
-  ([match]
-   (match->edn-file! default-downloaded-matches-directory match))
-  ([path match]
-   (let [filename (->> match
-                       :link
-                       link->filename)
-         path (str path "/" filename)]
-     (io/make-parents path)
-     (spit path
-           (clojure.core/pr-str match)))))
-
-(defn matches->edn-files! [matches]
-  (doseq [match matches]
-    (match->edn-file! match)))
-
-(defn read-match-from-edn [file-path]
-  (->> file-path
-       slurp
-       read-string))
-
-(defn read-match-from-csv [file-path]
-  (->> file-path
-       slurp))
-
-(defn delete-file [path]
-  (io/delete-file path true))
-
-(defn read-directory [directory] (clojure.java.io/file directory))
-
-(defn read-match-files [directory] (rest (file-seq (read-directory directory))))
-
-(defn save-all-matches-to-csv [{:keys [csv-file-path match-directory-path]
-                                :as   options}]
-  (prn "exporting matches to csv ..")
-  (prn "options: " options)
-  (->> match-directory-path
-       read-match-files
-       (map read-match-from-edn)
-       (matches->csv-file! csv-file-path)))
-
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
   link)
@@ -367,11 +282,6 @@
   (prn (str "new matches parsed: " (count matches)))
   matches)
 
-(defn new-match? [directory link]
-  (let [filename (link->filename link)]
-    (not (.exists
-           (io/file (str directory "/" filename))))))
-
 (def parse-match-from-link-fn (comp
                                 parse-valid-match
                                 html->hickory
@@ -388,13 +298,13 @@
        (map get-match-links-from-league)
        flatten
        log-matches-count
-       (filter (partial new-match? match-directory-path))
+       (filter (partial io/new-match? match-directory-path))
        log-new-matches-count
        (map parse-match-from-link-fn)
        log-parsed-matches-count
        (filter some?)
        log-valid-matches-count
-       (matches->edn-files!)))
+       (partial io/matches->edn-files! match-directory-path)))
 
 (def cli-config
   {:app         {:command     "kicker-league-scanner"
@@ -402,9 +312,9 @@
                  :version     "0.0.1"}
    :global-opts [{:option  "match-directory-path"
                   :short   "mdp"
-                  :as      (str "Location of all matches. e.g. " default-downloaded-matches-directory)
+                  :as      (str "Location of all matches. e.g. " io/default-downloaded-matches-directory)
                   :type    :string
-                  :default default-downloaded-matches-directory}]
+                  :default io/default-downloaded-matches-directory}]
    :commands    [{:command     "download" :short "d"
                   :description ["downloads all matches for the given season"]
                   :opts        [{:option  "season"
@@ -417,19 +327,18 @@
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
                                  :short   "tcf"
-                                 :as      (str "Location for the csv file with all games. e.g. " default-csv-file-path)
+                                 :as      (str "Location for the csv file with all games. e.g. " io/default-csv-file-path)
                                  :type    :string
-                                 :default default-csv-file-path}]
-                  :runs        save-all-matches-to-csv}]})
-;TODO: move io files to different namespace
+                                 :default io/default-csv-file-path}]
+                  :runs        io/save-all-matches-to-csv}]})
 
 ;TODO: change author
 ;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 (defn -main [& args]
   (cli/run-cmd args cli-config)
   (comment
-    (load-season {:match-directory-path default-downloaded-matches-directory
+    (load-season {:match-directory-path io/default-downloaded-matches-directory
                   :season               current-season})
-    (save-all-matches-to-csv {:match-directory-path default-downloaded-matches-directory
+    (save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
                               :target-csv-file      default-csv-file-path})))
 
