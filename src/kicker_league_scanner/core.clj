@@ -1,42 +1,11 @@
 (ns kicker-league-scanner.core
   (:require [cli-matic.core :as cli]
-            [clj-http.client :as client]
             [clojure.string :as str]
-            [hickory.core :as h]
             [hickory.select :as s]
             [kicker-league-scanner.io :as io])
 
   (:gen-class))
 
-(def season-year->id {"2023/24" "24"
-                      "2022/23" "23"
-                      "2022"    "22"
-                      "2019/20" "20"
-                      "2018/19" "16"
-                      "2018"    "13"
-                      "2017"    "12"
-                      "2016"    "11"
-                      "2015"    "9"
-                      "2014"    "8"
-                      "2013"    "7"
-                      "2012"    "4"
-                      "2011"    "3"
-                      "2010"    "2"
-                      "2009"    "1"})
-(def current-season "2023/24")
-
-(defn html->hickory [overview-link]
-  (let [html (slurp overview-link)]
-    (h/as-hickory (h/parse html))))
-
-(defn get-season [season]
-  (->> {:form-params {:filter_saison_id (get season-year->id season)
-                      :ok               "Los"
-                      :task             "veranstaltungen"}}
-       (client/post io/league-overview-season-link)
-       :body
-       h/parse
-       h/as-hickory))
 
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
@@ -284,7 +253,7 @@
 
 (def parse-match-from-link-fn (comp
                                 parse-valid-match
-                                html->hickory
+                                io/html->hickory
                                 log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
@@ -292,9 +261,9 @@
   (prn "downloading matches ..")
   (prn "options: " options)
   (->> season
-       get-season
+       io/get-season
        get-league-links-from-league-overview
-       (map html->hickory)
+       (map io/html->hickory)
        (map get-match-links-from-league)
        flatten
        log-matches-count
@@ -321,7 +290,7 @@
                                  :short   "s"
                                  :as      "target season"
                                  :type    :string
-                                 :default current-season}]
+                                 :default io/current-season}]
                   :runs        load-season}
                  {:command     "export" :short "s"
                   :description "exports all matches to a given csv file"
@@ -338,7 +307,7 @@
   (cli/run-cmd args cli-config)
   (comment
     (load-season {:match-directory-path io/default-downloaded-matches-directory
-                  :season               current-season})
+                  :season               io/current-season})
     (save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
-                              :target-csv-file      default-csv-file-path})))
+                              :target-csv-file      io/default-csv-file-path})))
 
