@@ -308,6 +308,6 @@
   (comment
     (load-season {:match-directory-path io/default-downloaded-matches-directory
                   :season               io/current-season})
-    (save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
+    (io/save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
                               :target-csv-file      io/default-csv-file-path})))
 
