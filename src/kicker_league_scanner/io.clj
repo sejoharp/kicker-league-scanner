@@ -50,16 +50,15 @@
   (let [game->csv-fn (partial game->csv match)]
     (map game->csv-fn games)))
 
-(defn match->csv-file! [file-path match]
-  (io/make-parents file-path)
+(defn match->csv-file! [file-writer match]
   (doseq [game-string (match->csv match)]
-    (spit file-path
-          (str game-string "\n")
-          :append true)))
+    (.write file-writer (str game-string "\n"))))
 
 (defn matches->csv-file! [file-path matches]
-  (doseq [match matches]
-    (match->csv-file! file-path match)))
+  (io/make-parents file-path)
+  (with-open [file-writer (clojure.java.io/writer file-path)]
+    (doseq [match matches]
+      (match->csv-file! file-writer match))))
 
 (defn link->filename [link]
   (-> link
@@ -102,14 +101,14 @@
 
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
-(defn save-all-matches-to-csv [{:keys [csv-file-path match-directory-path]
+(defn save-all-matches-to-csv [{:keys [target-csv-file match-directory-path]
                                 :as   options}]
   (prn "exporting matches to csv ..")
   (prn "options: " options)
   (->> match-directory-path
        read-match-files
        (map read-match-from-edn)
-       (matches->csv-file! csv-file-path)))
+       (matches->csv-file! target-csv-file)))
 
 (defn html->hickory [overview-link]
   (let [html (slurp overview-link)]

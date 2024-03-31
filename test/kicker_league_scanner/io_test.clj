@@ -21,7 +21,7 @@
 "
         path "test/resources/test-all-games.csv"]
     (io/delete-file path)
-    (io/match->csv-file! path match)
+    (io/matches->csv-file! path [match])
     (is (= expected-csv-content
            (io/read-match-from-csv path)))
     (io/delete-file path)))
