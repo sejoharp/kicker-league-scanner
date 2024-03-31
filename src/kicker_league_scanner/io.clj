@@ -5,7 +5,10 @@
             [hickory.core :as h]))
 
 (def default-downloaded-matches-directory "downloaded-matches")
-(def default-csv-file-path "./all-games.csv")
+(def now-as-timestamp
+  (int (/ (System/currentTimeMillis) 1000)))
+(def default-csv-file-path
+  (str "./all-games-" now-as-timestamp ".csv"))
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def season-year->id {"2023/24" "24"
                       "2022/23" "23"
