@@ -281,7 +281,7 @@
                  :version     "0.0.1"}
    :global-opts [{:option  "match-directory-path"
                   :short   "mdp"
-                  :as      (str "Location of all matches. e.g. " io/default-downloaded-matches-directory)
+                  :as      (str "Location of all matches.")
                   :type    :string
                   :default io/default-downloaded-matches-directory}]
    :commands    [{:command     "download" :short "d"
@@ -296,7 +296,7 @@
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
                                  :short   "tcf"
-                                 :as      (str "Location for the csv file with all games. e.g. " io/default-csv-file-path)
+                                 :as      (str "Location for the csv file with all games.")
                                  :type    :string
                                  :default io/default-csv-file-path}]
                   :runs        io/save-all-matches-to-csv}]})
