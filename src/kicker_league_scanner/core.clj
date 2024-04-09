@@ -275,39 +275,15 @@
        log-valid-matches-count
        (partial io/matches->edn-files! match-directory-path)))
 
-(def cli-config
-  {:app         {:command     "kicker-league-scanner"
-                 :description "A command-line kicker stats scanner"
-                 :version     "0.0.1"}
-   :global-opts [{:option  "match-directory-path"
-                  :short   "mdp"
-                  :as      (str "Location of all matches.")
-                  :type    :string
-                  :default io/default-downloaded-matches-directory}]
-   :commands    [{:command     "download" :short "d"
-                  :description ["downloads all matches for the given season"]
-                  :opts        [{:option  "season"
-                                 :short   "s"
-                                 :as      "target season"
-                                 :type    :string
-                                 :default io/current-season}]
-                  :runs        load-season}
-                 {:command     "export" :short "s"
-                  :description "exports all matches to a given csv file"
-                  :opts        [{:option  "target-csv-file"
-                                 :short   "tcf"
-                                 :as      (str "Location for the csv file with all games.")
-                                 :type    :string
-                                 :default io/default-csv-file-path}]
-                  :runs        io/save-all-matches-to-csv}]})
+
 
 ;TODO: change author
 ;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 (defn -main [& args]
-  (cli/run-cmd args cli-config)
+  (cli/run-cmd args (io/create-cli-config load-season))
   (comment
     (load-season {:match-directory-path io/default-downloaded-matches-directory
                   :season               io/current-season})
     (io/save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
-                              :target-csv-file      io/default-csv-file-path})))
+                                 :target-csv-file      io/default-csv-file-path})))
 
