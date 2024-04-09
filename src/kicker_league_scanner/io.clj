@@ -2,7 +2,8 @@
   (:require [clj-http.client :as client]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [hickory.core :as h]))
+            [hickory.core :as h]
+            [lein-project-reader.core :as lpr]))
 
 (def default-downloaded-matches-directory "downloaded-matches")
 (def now-as-timestamp
@@ -127,7 +128,7 @@
 (defn create-cli-config [load-season-fn]
   {:app         {:command     "kicker-league-scanner"
                  :description "A command-line kicker stats scanner"
-                 :version     "0.0.1"}
+                 :version     (:version (lpr/read-project))}
    :global-opts [{:option  "match-directory-path"
                   :short   "mdp"
                   :as      (str "Location of all matches.")

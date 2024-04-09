@@ -5,7 +5,8 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clj-commons/hickory "0.7.4"]
-                 [clj-http "3.12.3"]]
+                 [clj-http "3.12.3"]
+                 [net.clojars.aneilm/lein-project-reader "0.0.1"]]
 
   :main ^:skip-aot kicker-league-scanner.core
   :repl-options {:init-ns de.otto.jarvis.zerometers.core}
