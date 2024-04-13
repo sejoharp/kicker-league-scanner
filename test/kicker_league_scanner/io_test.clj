@@ -56,8 +56,8 @@
                :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
                :match-day  1}
         match-as-csv-lines (match->csv match)]
-    (is (= "2023-09-05;1;4;H;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR);G;1;1;2023/03;1" (nth match-as-csv-lines 6)))
-    (is (= "2023-09-05;1;4;G;Kickertrupp (NR);Samuel;Boran;4;6;Walter;Felix;Flying Circus;H;1;1;2023/03;1" (nth match-as-csv-lines 7)))))
+    (is (= "2023-09-05;1;4;H;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR);G;2;0;2023/03;1" (nth match-as-csv-lines 6)))
+    (is (= "2023-09-05;1;4;G;Kickertrupp (NR);Samuel;Boran;4;6;Walter;Felix;Flying Circus;H;0;2;2023/03;1" (nth match-as-csv-lines 7)))))
 
 (deftest calculate-quarter-test
   (is (= "2023/03" (calculate-quarter "2023-09-22")))

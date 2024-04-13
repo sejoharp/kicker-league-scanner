@@ -68,7 +68,7 @@
 (defn game->csv [match game]
   (let [home-players (:names (:home game))
         guest-players (:names (:guest game))
-        match-points (calculate-points match)
+        game-points (calculate-game-points game)
         quarter (calculate-quarter (:date match))]
     [(str/join ";" [(:date match)
                    (:match-day match)
@@ -87,8 +87,8 @@
                      "XXXX")
                    (:guest-team match)
                    "G"
-                   (first match-points)
-                   (second match-points)
+                   (first game-points)
+                   (second game-points)
                    quarter
                    "1"])
      (str/join ";" [(:date match)
@@ -108,8 +108,8 @@
                      "XXXX")
                    (:home-team match)
                    "H"
-                   (second match-points)
-                    (first match-points)
+                   (second game-points)
+                    (first game-points)
                    quarter
                    "1"])]))
 
