@@ -28,12 +28,52 @@
                       "2009"    "1"})
 (def current-season "2023/24")
 
+(defn calculate-game-points [game] (cond
+                                     (= 6 (:score (:home game))) [2 0]
+                                     (= 6 (:score (:guest game))) [0 2]
+                                     (= (:score (:home game)) (:score (:guest game))) [1 1]
+                                     :else [0 0]))
+
+(defn calculate-match-score [games]
+  (let [game-points (map calculate-game-points games)]
+    (loop [game-points-list game-points
+           result [0 0]]
+      (if (= 0 (count game-points-list))
+        result
+        (let [home-points (first (first game-points-list))
+              guest-points (second (first game-points-list))]
+          (recur (rest game-points-list) [(+ (first result)
+                                             home-points)
+                                          (+ (second result)
+                                             guest-points)])))))
+  )
+
+(defn calculate-points [match]
+  (let [match-scores (calculate-match-score (:games match))]
+    (cond
+      (= (first match-scores) (second match-scores)) [1 1]
+      (> (first match-scores) (second match-scores)) [2 0]
+      (< (first match-scores) (second match-scores)) [0 2])))
+
+(defn calculate-quarter [date]
+  (let [month (Integer/parseInt (second (str/split date #"-")))
+        year (first (str/split date #"-"))]
+    (cond
+      (<= month 3) (str year "/01")
+      (<= month 6) (str year "/02")
+      (<= month 9) (str year "/03")
+      (>= month 10) (str year "/04")
+      )))
+
 (defn game->csv [match game]
   (let [home-players (:names (:home game))
-        guest-players (:names (:guest game))]
+        guest-players (:names (:guest game))
+        match-points (calculate-points match)
+        quarter (calculate-quarter (:date match))]
     (str/join ";" [(:date match)
                    (:match-day match)
                    (:position game)
+                   "H"
                    (:home-team match)
                    (first home-players)
                    (if (= 2 (count home-players))
@@ -45,7 +85,12 @@
                    (if (= 2 (count guest-players))
                      (second guest-players)
                      "XXXX")
-                   (:guest-team match)])))
+                   (:guest-team match)
+                   "G"
+                   (first match-points)
+                   (second match-points)
+                   quarter
+                   "1"])))
 
 (defn match->csv [{games :games :as match}]
   (let [game->csv-fn (partial game->csv match)]
