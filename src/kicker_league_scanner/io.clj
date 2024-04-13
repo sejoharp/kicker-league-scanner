@@ -70,7 +70,7 @@
         guest-players (:names (:guest game))
         match-points (calculate-points match)
         quarter (calculate-quarter (:date match))]
-    (str/join ";" [(:date match)
+    [(str/join ";" [(:date match)
                    (:match-day match)
                    (:position game)
                    "H"
@@ -90,11 +90,32 @@
                    (first match-points)
                    (second match-points)
                    quarter
-                   "1"])))
+                   "1"])
+     (str/join ";" [(:date match)
+                   (:match-day match)
+                   (:position game)
+                   "G"
+                   (:guest-team match)
+                   (first guest-players)
+                   (if (= 2 (count guest-players))
+                     (second guest-players)
+                     "XXXX")
+                   (:score (:guest game))
+                   (:score (:home game))
+                   (first home-players)
+                   (if (= 2 (count home-players))
+                     (second home-players)
+                     "XXXX")
+                   (:home-team match)
+                   "H"
+                   (second match-points)
+                    (first match-points)
+                   quarter
+                   "1"])]))
 
 (defn match->csv [{games :games :as match}]
   (let [game->csv-fn (partial game->csv match)]
-    (map game->csv-fn games)))
+    (flatten (map game->csv-fn games))))
 
 (defn match->csv-file! [file-writer match]
   (doseq [game-string (match->csv match)]
