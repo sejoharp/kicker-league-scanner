@@ -231,6 +231,33 @@
     (parse-match match-page)
     nil))
 
+(defn calculate-game-points [game] (cond
+                                     (= 6 (:score (:home game))) [2 0]
+                                     (= 6 (:score (:guest game))) [0 2]
+                                     (= (:score (:home game)) (:score (:guest game))) [1 1]
+                                     :else [0 0]))
+
+(defn calculate-match-score [games]
+  (let [game-points (map calculate-game-points games)]
+    (loop [game-points-list game-points
+           result [0 0]]
+      (if (= 0 (count game-points-list))
+        result
+        (let [home-points (first (first game-points-list))
+              guest-points (second (first game-points-list))]
+          (recur (rest game-points-list) [(+ (first result)
+                                             home-points)
+                                          (+ (second result)
+                                             guest-points)])))))
+  )
+
+(defn calculate-points [match]
+  (let [match-scores (calculate-match-score (:games match))]
+    (cond
+      (= (first match-scores) (second match-scores)) [1 1]
+      (> (first match-scores) (second match-scores)) [2 0]
+      (< (first match-scores) (second match-scores)) [0 2])))
+
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
   link)
