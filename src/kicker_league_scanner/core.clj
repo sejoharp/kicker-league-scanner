@@ -275,7 +275,7 @@
        log-parsed-matches-count
        (filter some?)
        log-valid-matches-count
-       (partial io/matches->edn-files! match-directory-path)))
+       (io/matches->edn-files! match-directory-path)))
 
 
 
