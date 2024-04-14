@@ -57,7 +57,7 @@
                             {:home {:names ["Walter"] :score 2} :guest {:names ["Yasmine"] :score 6} :position 2}
                             {:home {:names ["Walter" "Felix"] :score 3} :guest {:names ["Samuel" "Boran"] :score 6} :position 3}
                             {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
-               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
+               :link       "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
                :match-day  1}
         match-as-csv-lines (match->csv match)]
     (is (= "2023-09-05;1;4;H;Flying Circus;Walter;Felix;6;4;Samuel;Boran;Kickertrupp (NR);G;2;0;2023/03;1" (nth match-as-csv-lines 12)))
@@ -71,7 +71,7 @@
   (is (= "2023/02" (calculate-quarter "2023-04-06")))
   (is (= "2023/04" (calculate-quarter "2023-10-11"))))
 
-(deftest game->csv-test
+(deftest ^:test-refresh/focus game->csv-test
   (let [match {:date       "2023-09-05"
                :home-team  "Flying Circus"
                :guest-team "Kickertrupp (NR)"
@@ -79,8 +79,15 @@
                             {:home {:names ["Walter" "Felix"] :score 6} :guest {:names ["Samuel" "Boran"] :score 4} :position 4}]
                :link       "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
                :match-day  1}
+        external-test-match {:date       "2023-10-12"
+                             :home-team  "Anboard"
+                             :guest-team "Hamburg Privateers 08 (NR)"
+                             :games      [{:home {:names ["Xander"] :score 6} :guest {:names ["Zierott, Ulli"] :score 1} :position 5}]
+                             :link       "https://kickern-hamburg.de/liga/aktuelle-partien?task=begegnung_spielplan&veranstaltungid=229&id=15039"
+                             :match-day  3}
         single-game (first (:games match))
-        double-game (second (:games match))]
+        double-game (second (:games match))
+        external-test-game (first (:games external-test-match))]
     (is (= ["2023-09-05;1;1;H;Flying Circus;Felix;XXXX;6;2;Samuel;XXXX;Kickertrupp (NR);G;2;0;2023/03;1"
             "2023-09-05;1;1;H;Flying Circus;XXXX;Felix;6;2;XXXX;Samuel;Kickertrupp (NR);G;2;0;2023/03;1"
             "2023-09-05;1;1;G;Kickertrupp (NR);Samuel;XXXX;2;6;Felix;XXXX;Flying Circus;H;0;2;2023/03;1"
@@ -90,7 +97,12 @@
             "2023-09-05;1;4;H;Flying Circus;Felix;Walter;6;4;Boran;Samuel;Kickertrupp (NR);G;2;0;2023/03;1"
             "2023-09-05;1;4;G;Kickertrupp (NR);Samuel;Boran;4;6;Walter;Felix;Flying Circus;H;0;2;2023/03;1"
             "2023-09-05;1;4;G;Kickertrupp (NR);Boran;Samuel;4;6;Felix;Walter;Flying Circus;H;0;2;2023/03;1"]
-           (game->csv match double-game)))))
+           (game->csv match double-game)))
+    (is (= ["2023-10-12;3;5;H;Anboard;Xander;XXXX;6;1;Zierott, Ulli;XXXX;Hamburg Privateers 08 (NR);G;2;0;2023/04;1"
+            "2023-10-12;3;5;H;Anboard;XXXX;Xander;6;1;XXXX;Zierott, Ulli;Hamburg Privateers 08 (NR);G;2;0;2023/04;1"
+            "2023-10-12;3;5;G;Hamburg Privateers 08 (NR);Zierott, Ulli;XXXX;1;6;Xander;XXXX;Anboard;H;0;2;2023/04;1"
+            "2023-10-12;3;5;G;Hamburg Privateers 08 (NR);XXXX;Zierott, Ulli;1;6;XXXX;Xander;Anboard;H;0;2;2023/04;1"]
+           (game->csv external-test-match external-test-game)))))
 
 (deftest transforms-link-to-filename
   (is (= "task=begegnung_spielplan-veranstaltungid=237-id=15478.edn"
