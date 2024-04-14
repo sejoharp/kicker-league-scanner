@@ -83,7 +83,7 @@
                              :home-team  "Anboard"
                              :guest-team "Hamburg Privateers 08 (NR)"
                              :games      [{:home {:names ["Xander"] :score 6} :guest {:names ["Zierott, Ulli"] :score 1} :position 5}]
-                             :link       "https://kickern-hamburg.de/liga/aktuelle-partien?task=begegnung_spielplan&veranstaltungid=229&id=15039"
+                             :link       "https://kickern-hamburg.de//liga/aktuelle-partien?task=begegnung_spielplan&veranstaltungid=229&id=15039"
                              :match-day  3}
         single-game (first (:games match))
         double-game (second (:games match))
