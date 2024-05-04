@@ -16,4 +16,5 @@ pom.xml.asc
 downloaded-matches/*
 *.csv
 *tar.xz
+*.bz2
 parsed_seasons.clj
