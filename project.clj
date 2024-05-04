@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clj-commons/hickory "0.7.4"]
                  [clj-http "3.12.3"]
+                 [cli-matic "0.5.4"]
                  [net.clojars.aneilm/lein-project-reader "0.0.1"]]
 
   :main ^:skip-aot kicker-league-scanner.core
@@ -27,7 +28,7 @@
             "test" ["do" ["nsorg" "--replace"] ["cljfmt" "fix"] "test"]}
 
   :profiles {:uberjar {:aot :all}
-             :dev     {:dependencies [[cli-matic "0.5.4"]]
+             :dev     {:dependencies []
                        :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                       [lein-ancient "0.6.14"]
                                       [lein-nvd "0.5.4"]
