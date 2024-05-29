@@ -3,13 +3,14 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h]
+            [java-time.api :as jt]
             [lein-project-reader.core :as lpr]))
 
 (def default-downloaded-matches-directory "downloaded-matches")
-(def now-as-timestamp
-  (int (/ (System/currentTimeMillis) 1000)))
+(def now-in-readable-format
+  (jt/format "YYYY-MM-dd" (jt/local-date-time)))
 (def default-csv-file-path
-  (str "./all-games-" now-as-timestamp ".csv"))
+  (str "./all-games-" now-in-readable-format ".csv"))
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def season-year->id {"2023/24" "24"
                       "2022/23" "23"

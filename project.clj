@@ -5,6 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clj-commons/hickory "0.7.4"]
+                 [clojure.java-time "1.4.2"]
                  [clj-http "3.12.3"]
                  [cli-matic "0.5.4"]
                  [net.clojars.aneilm/lein-project-reader "0.0.1"]]
