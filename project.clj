@@ -8,7 +8,8 @@
                  [clojure.java-time "1.4.2"]
                  [clj-http "3.12.3"]
                  [cli-matic "0.5.4"]
-                 [net.clojars.aneilm/lein-project-reader "0.0.1"]]
+                 [net.clojars.aneilm/lein-project-reader "0.0.1"]
+                 [org.apache.commons/commons-compress "1.26.2"]]
 
   :main ^:skip-aot kicker-league-scanner.core
   :repl-options {:init-ns de.otto.jarvis.zerometers.core}

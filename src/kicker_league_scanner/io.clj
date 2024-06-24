@@ -4,13 +4,14 @@
             [clojure.string :as str]
             [hickory.core :as h]
             [java-time.api :as jt]
-            [lein-project-reader.core :as lpr]))
+            [lein-project-reader.core :as lpr])
+  (:import (org.apache.commons.compress.compressors.bzip2 BZip2CompressorOutputStream)))
 
 (def default-downloaded-matches-directory "downloaded-matches")
 (def now-in-readable-format
   (jt/format "YYYY-MM-dd" (jt/local-date-time)))
 (def default-csv-file-path
-  (str "./all-games-" now-in-readable-format ".csv"))
+  (str "./all-games-" now-in-readable-format ".csv.bz2"))
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 (def season-year->id {"2023/24" "24"
                       "2022/23" "23"
@@ -166,7 +167,7 @@
 
 (defn matches->csv-file! [file-path matches]
   (io/make-parents file-path)
-  (with-open [file-writer (clojure.java.io/writer file-path)]
+  (with-open [file-writer (io/writer (BZip2CompressorOutputStream. (io/output-stream file-path)))]
     (doseq [match matches]
       (match->csv-file! file-writer match))))
 
@@ -211,6 +212,7 @@
 
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
+;TODO: use https://github.com/clojure/data.csv to write file. It can transform a list into csv.
 (defn save-all-matches-to-csv [{:keys [target-csv-file match-directory-path]
                                 :as   options}]
   (prn "exporting matches to csv ..")
