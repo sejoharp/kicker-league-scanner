@@ -48,8 +48,7 @@
           (recur (rest game-points-list) [(+ (first result)
                                              home-points)
                                           (+ (second result)
-                                             guest-points)])))))
-  )
+                                             guest-points)]))))))
 
 (defn calculate-points [match]
   (let [match-scores (calculate-match-score (:games match))]
@@ -65,8 +64,7 @@
       (<= month 3) (str year "/01")
       (<= month 6) (str year "/02")
       (<= month 9) (str year "/03")
-      (>= month 10) (str year "/04")
-      )))
+      (>= month 10) (str year "/04"))))
 
 (defn game->csv [match game]
   (let [home-players (:names (:home game))
@@ -195,7 +193,7 @@
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
     (not (.exists
-           (io/file (str directory "/" filename))))))
+          (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
   (->> file-path
@@ -241,7 +239,6 @@
 (defn html->hickory [overview-link]
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
-
 
 (defn get-season [season]
   (->> {:form-params {:filter_saison_id (get season-year->id season)

@@ -6,7 +6,6 @@
 
   (:gen-class))
 
-
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
 
@@ -29,10 +28,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -142,10 +141,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -231,8 +230,6 @@
     (parse-match match-page)
     nil))
 
-
-
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
   link)
@@ -254,9 +251,9 @@
   matches)
 
 (def parse-match-from-link-fn (comp
-                                parse-valid-match
-                                io/html->hickory
-                                log-parsing-link))
+                               parse-valid-match
+                               io/html->hickory
+                               log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]
@@ -281,6 +278,8 @@
 
 ;TODO: change author
 ;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
+
+
 (defn -main [& args]
   (cli/run-cmd args (io/create-cli-config load-season))
   (comment
