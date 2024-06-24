@@ -5,7 +5,8 @@
             [hickory.core :as h]
             [java-time.api :as jt]
             [lein-project-reader.core :as lpr])
-  (:import (org.apache.commons.compress.compressors.bzip2 BZip2CompressorOutputStream)))
+  (:import (java.io ByteArrayOutputStream)
+           (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
 
 (def default-downloaded-matches-directory "downloaded-matches")
 (def now-in-readable-format
@@ -204,6 +205,21 @@
 (defn read-match-from-csv [file-path]
   (->> file-path
        slurp))
+
+
+(defn read-bzip2-as-string [file-path]
+  (with-open [file-stream (io/input-stream file-path)
+              bzip2-stream (BZip2CompressorInputStream. file-stream)
+              byte-array-stream (ByteArrayOutputStream.)]
+    (io/copy bzip2-stream byte-array-stream)
+    (.toString byte-array-stream "UTF-8")))
+
+#_(defn read-bzip2-csv [file-path]
+  (with-open [file-stream (io/input-stream file-path)
+              bzip2-stream (BZip2CompressorInputStream. file-stream)
+              reader (io/reader bzip2-stream)]
+    (doall
+      (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
