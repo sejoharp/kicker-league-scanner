@@ -1,5 +1,6 @@
 (ns kicker-league-scanner.io
   (:require [clj-http.client :as client]
+            [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h]
@@ -204,20 +205,19 @@
   (->> file-path
        slurp))
 
-
 (defn read-bzip2-as-string [file-path]
-  (with-open [file-stream (io/input-stream file-path)
-              bzip2-stream (BZip2CompressorInputStream. file-stream)
-              byte-array-stream (ByteArrayOutputStream.)]
-    (io/copy bzip2-stream byte-array-stream)
-    (.toString byte-array-stream "UTF-8")))
-
-#_(defn read-bzip2-csv [file-path]
   (with-open [file-stream (io/input-stream file-path)
               bzip2-stream (BZip2CompressorInputStream. file-stream)
               reader (io/reader bzip2-stream)]
     (doall
-      (csv/read-csv reader))))
+     (csv/read-csv reader {:separator \;}))))
+
+#_(defn read-bzip2-csv [file-path]
+    (with-open [file-stream (io/input-stream file-path)
+                bzip2-stream (BZip2CompressorInputStream. file-stream)
+                reader (io/reader bzip2-stream)]
+      (doall
+       (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
