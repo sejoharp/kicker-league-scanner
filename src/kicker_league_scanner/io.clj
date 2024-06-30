@@ -72,98 +72,100 @@
         guest-players (:names (:guest game))
         game-points (calculate-game-points game)
         quarter (calculate-quarter (:date match))]
-    [(str/join ";" [(:date match)
-                    (:match-day match)
-                    (:position game)
-                    "H"
-                    (:home-team match)
-                    (first home-players)
-                    (if (= 2 (count home-players))
-                      (second home-players)
-                      "XXXX")
-                    (:score (:home game))
-                    (:score (:guest game))
-                    (first guest-players)
-                    (if (= 2 (count guest-players))
-                      (second guest-players)
-                      "XXXX")
-                    (:guest-team match)
-                    "G"
-                    (first game-points)
-                    (second game-points)
-                    quarter
-                    "1"])
-     (str/join ";" [(:date match)
-                    (:match-day match)
-                    (:position game)
-                    "H"
-                    (:home-team match)
-                    (if (= 2 (count home-players))
-                      (second home-players)
-                      "XXXX")
-                    (first home-players)
-                    (:score (:home game))
-                    (:score (:guest game))
-                    (if (= 2 (count guest-players))
-                      (second guest-players)
-                      "XXXX")
-                    (first guest-players)
-                    (:guest-team match)
-                    "G"
-                    (first game-points)
-                    (second game-points)
-                    quarter
-                    "1"])
-     (str/join ";" [(:date match)
-                    (:match-day match)
-                    (:position game)
-                    "G"
-                    (:guest-team match)
-                    (first guest-players)
-                    (if (= 2 (count guest-players))
-                      (second guest-players)
-                      "XXXX")
-                    (:score (:guest game))
-                    (:score (:home game))
-                    (first home-players)
-                    (if (= 2 (count home-players))
-                      (second home-players)
-                      "XXXX")
-                    (:home-team match)
-                    "H"
-                    (second game-points)
-                    (first game-points)
-                    quarter
-                    "1"])
-     (str/join ";" [(:date match)
-                    (:match-day match)
-                    (:position game)
-                    "G"
-                    (:guest-team match)
-                    (if (= 2 (count guest-players))
-                      (second guest-players)
-                      "XXXX")
-                    (first guest-players)
-                    (:score (:guest game))
-                    (:score (:home game))
-                    (if (= 2 (count home-players))
-                      (second home-players)
-                      "XXXX")
-                    (first home-players)
-                    (:home-team match)
-                    "H"
-                    (second game-points)
-                    (first game-points)
-                    quarter
-                    "1"])]))
+    [[(:date match)
+      (:match-day match)
+      (:position game)
+      "H"
+      (:home-team match)
+      (first home-players)
+      (if (= 2 (count home-players))
+        (second home-players)
+        "XXXX")
+      (:score (:home game))
+      (:score (:guest game))
+      (first guest-players)
+      (if (= 2 (count guest-players))
+        (second guest-players)
+        "XXXX")
+      (:guest-team match)
+      "G"
+      (first game-points)
+      (second game-points)
+      quarter
+      1]
+     [(:date match)
+      (:match-day match)
+      (:position game)
+      "H"
+      (:home-team match)
+      (if (= 2 (count home-players))
+        (second home-players)
+        "XXXX")
+      (first home-players)
+      (:score (:home game))
+      (:score (:guest game))
+      (if (= 2 (count guest-players))
+        (second guest-players)
+        "XXXX")
+      (first guest-players)
+      (:guest-team match)
+      "G"
+      (first game-points)
+      (second game-points)
+      quarter
+      1]
+     [(:date match)
+      (:match-day match)
+      (:position game)
+      "G"
+      (:guest-team match)
+      (first guest-players)
+      (if (= 2 (count guest-players))
+        (second guest-players)
+        "XXXX")
+      (:score (:guest game))
+      (:score (:home game))
+      (first home-players)
+      (if (= 2 (count home-players))
+        (second home-players)
+        "XXXX")
+      (:home-team match)
+      "H"
+      (second game-points)
+      (first game-points)
+      quarter
+      1]
+     [(:date match)
+      (:match-day match)
+      (:position game)
+      "G"
+      (:guest-team match)
+      (if (= 2 (count guest-players))
+        (second guest-players)
+        "XXXX")
+      (first guest-players)
+      (:score (:guest game))
+      (:score (:home game))
+      (if (= 2 (count home-players))
+        (second home-players)
+        "XXXX")
+      (first home-players)
+      (:home-team match)
+      "H"
+      (second game-points)
+      (first game-points)
+      quarter
+      1]]))
 
 (defn match->csv [{games :games :as match}]
   (let [game->csv-fn (partial game->csv match)]
-    (flatten (map game->csv-fn games))))
+    (reduce (fn [acc game]
+              (into acc (game->csv-fn game)))
+            []
+            games)))
 
 (defn match->csv-file! [file-writer match]
-  (doseq [game-string (match->csv match)]
-    (.write file-writer (str game-string "\n"))))
+  (csv/write-csv file-writer (match->csv match) :separator \;))
 
 (defn matches->csv-file! [file-path matches]
   (io/make-parents file-path)
@@ -227,8 +229,7 @@
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
 ;TODO: use https://github.com/clojure/data.csv to write file. It can transform a list into csv.
-(defn save-all-matches-to-csv [{:keys [target-csv-file match-directory-path]
-                                :as   options}]
+(defn save-all-matches-to-csv [{:keys [target-csv-file match-directory-path] :as options}]
   (prn "exporting matches to csv ..")
   (prn "options: " options)
   (->> match-directory-path
