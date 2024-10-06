@@ -2,6 +2,7 @@
   (:require [cli-matic.core :as cli]
             [clojure.string :as str]
             [hickory.select :as s]
+            [clojure.pprint :as pprint]
             [kicker-league-scanner.io :as io])
 
   (:gen-class))
@@ -28,10 +29,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -141,10 +142,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -168,6 +169,11 @@
                                  second)]
     (reformat-date cleaned-date-string)))
 
+(defn safe-game-day [[weekday date time day :as _date-time-game-day-string]]
+  (some->> day
+           (#(str/replace % #"\." ""))
+           Integer/parseInt))
+
 (defn parse-match-day [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
                                                     (s/tag :div)))
@@ -187,9 +193,7 @@
         match-day (->> date-string
                        str/trim
                        (#(str/split % #" "))
-                       (#(nth % 3))
-                       (#(str/replace % #"\." ""))
-                       Integer/parseInt)]
+                       safe-game-day)]
     match-day))
 
 (defn valid-match? [match-page]
@@ -251,9 +255,9 @@
   matches)
 
 (def parse-match-from-link-fn (comp
-                               parse-valid-match
-                               io/html->hickory
-                               log-parsing-link))
+                                parse-valid-match
+                                io/html->hickory
+                                log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]

@@ -197,6 +197,11 @@
     (is (= 1
            (parse-match-day match-html)))))
 
+(deftest parses-match-day-without-game-day
+  (let [match-html (io/html->hickory "test/resources/match-without-game-day-relegation.html")]
+    (is (= nil
+           (parse-match-day match-html)))))
+
 (deftest parses-link
   (let [match-html (io/html->hickory "test/resources/match.html")]
     (is (= "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
