@@ -18,3 +18,4 @@ downloaded-matches/*
 *tar.xz
 *.bz2
 parsed_seasons.clj
+.DS_Store
