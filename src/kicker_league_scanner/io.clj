@@ -15,7 +15,8 @@
 (def default-csv-file-path
   (str "./all-games-" now-in-readable-format ".csv.bz2"))
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
-(def season-year->id {"2023/24" "24"
+(def season-year->id {"2024/25" "26"
+                      "2023/24" "24"
                       "2022/23" "23"
                       "2022"    "22"
                       "2019/20" "20"
@@ -30,7 +31,7 @@
                       "2011"    "3"
                       "2010"    "2"
                       "2009"    "1"})
-(def current-season "2023/24")
+(def current-season "2024/25")
 
 (defn calculate-game-points [game] (cond
                                      (= 6 (:score (:home game))) [2 0]
@@ -195,7 +196,7 @@
 
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
-    (not (.exists
+      (not (.exists
           (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
@@ -212,14 +213,14 @@
               bzip2-stream (BZip2CompressorInputStream. file-stream)
               reader (io/reader bzip2-stream)]
     (doall
-     (csv/read-csv reader {:separator \;}))))
+      (csv/read-csv reader {:separator \;}))))
 
 #_(defn read-bzip2-csv [file-path]
     (with-open [file-stream (io/input-stream file-path)
                 bzip2-stream (BZip2CompressorInputStream. file-stream)
                 reader (io/reader bzip2-stream)]
       (doall
-       (csv/read-csv reader))))
+        (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
