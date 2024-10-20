@@ -19,3 +19,4 @@ downloaded-matches/*
 *.bz2
 parsed_seasons.clj
 .DS_Store
+/.pwd

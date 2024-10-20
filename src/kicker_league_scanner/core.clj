@@ -2,8 +2,8 @@
   (:require [cli-matic.core :as cli-matic]
             [clojure.string :as str]
             [hickory.select :as s]
-            [kicker-league-scanner.io :as io]
-            [kicker-league-scanner.cli :as cli])
+            [kicker-league-scanner.cli :as cli]
+            [kicker-league-scanner.io :as io])
 
   (:gen-class))
 
@@ -29,10 +29,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -142,10 +142,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -255,9 +255,9 @@
   matches)
 
 (def parse-match-from-link-fn (comp
-                                parse-valid-match
-                                io/html->hickory
-                                log-parsing-link))
+                               parse-valid-match
+                               io/html->hickory
+                               log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]

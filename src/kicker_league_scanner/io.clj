@@ -4,7 +4,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [hickory.core :as h])
-  (:import (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
+  (:import (java.io ByteArrayOutputStream)
+           (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
 
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
 
@@ -190,7 +191,7 @@
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
     (not (.exists
-           (io/file (str directory "/" filename))))))
+          (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
   (->> file-path
@@ -206,14 +207,14 @@
               bzip2-stream (BZip2CompressorInputStream. file-stream)
               reader (io/reader bzip2-stream)]
     (doall
-      (csv/read-csv reader {:separator \;}))))
+     (csv/read-csv reader {:separator \;}))))
 
 #_(defn read-bzip2-csv [file-path]
     (with-open [file-stream (io/input-stream file-path)
                 bzip2-stream (BZip2CompressorInputStream. file-stream)
                 reader (io/reader bzip2-stream)]
       (doall
-        (csv/read-csv reader))))
+       (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
@@ -243,3 +244,20 @@
        :body
        h/parse
        h/as-hickory))
+
+(defn create-matches-as-byte-array [matches]
+  (let [output-stream (ByteArrayOutputStream.)
+        bzip2-output-stream (BZip2CompressorOutputStream. output-stream)]
+    (with-open [writer (io/writer bzip2-output-stream)]
+      (doseq [match matches]
+        (match->csv-file! writer match)))
+    (.toByteArray ^ByteArrayOutputStream output-stream)))
+
+(defn upload-file [domain user password filename content-as-inputstream]
+  (client/put (str "https://" domain "/remote.php/dav/files/" user "/" filename)
+              {:body       content-as-inputstream
+               :basic-auth [user password]}))
+
+(defn upload-matches [domain user password filename matches]
+  (let [matches-as-byte-array (create-matches-as-byte-array matches)]
+    (println (upload-file domain user password filename (io/input-stream matches-as-byte-array)))))
