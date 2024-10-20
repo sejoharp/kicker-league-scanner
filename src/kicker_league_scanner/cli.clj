@@ -35,4 +35,4 @@
                                  :as      (str "Location for the csv file with all games.")
                                  :type    :string
                                  :default default-csv-file-path}]
-                  :runs        io/save-all-matches-to-csv}]})
+                  :runs        io/save-all-matches-to-csv-file}]})

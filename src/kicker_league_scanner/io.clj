@@ -191,7 +191,7 @@
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
     (not (.exists
-          (io/file (str directory "/" filename))))))
+           (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
   (->> file-path
@@ -207,14 +207,14 @@
               bzip2-stream (BZip2CompressorInputStream. file-stream)
               reader (io/reader bzip2-stream)]
     (doall
-     (csv/read-csv reader {:separator \;}))))
+      (csv/read-csv reader {:separator \;}))))
 
 #_(defn read-bzip2-csv [file-path]
     (with-open [file-stream (io/input-stream file-path)
                 bzip2-stream (BZip2CompressorInputStream. file-stream)
                 reader (io/reader bzip2-stream)]
       (doall
-       (csv/read-csv reader))))
+        (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
@@ -224,7 +224,7 @@
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
 ;TODO: use https://github.com/clojure/data.csv to write file. It can transform a list into csv.
-(defn save-all-matches-to-csv [{:keys [target-csv-file match-directory-path] :as options}]
+(defn save-all-matches-to-csv-file [{:keys [target-csv-file match-directory-path] :as options}]
   (prn "exporting matches to csv ..")
   (prn "options: " options)
   (->> match-directory-path
