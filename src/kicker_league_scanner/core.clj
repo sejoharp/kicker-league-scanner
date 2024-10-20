@@ -1,9 +1,9 @@
 (ns kicker-league-scanner.core
-  (:require [cli-matic.core :as cli]
+  (:require [cli-matic.core :as cli-matic]
             [clojure.string :as str]
             [hickory.select :as s]
-            [clojure.pprint :as pprint]
-            [kicker-league-scanner.io :as io])
+            [kicker-league-scanner.io :as io]
+            [kicker-league-scanner.cli :as cli])
 
   (:gen-class))
 
@@ -285,10 +285,10 @@
 
 
 (defn -main [& args]
-  (cli/run-cmd args (io/create-cli-config load-season))
+  (cli-matic/run-cmd args (cli/create-cli-config load-season))
   (comment
-    (load-season {:match-directory-path io/default-downloaded-matches-directory
+    (load-season {:match-directory-path cli/default-downloaded-matches-directory
                   :season               io/current-season})
-    (io/save-all-matches-to-csv {:match-directory-path io/default-downloaded-matches-directory
-                                 :target-csv-file      io/default-csv-file-path})))
+    (io/save-all-matches-to-csv {:match-directory-path cli/default-downloaded-matches-directory
+                                 :target-csv-file      cli/default-csv-file-path})))
 

@@ -3,18 +3,11 @@
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [hickory.core :as h]
-            [java-time.api :as jt]
-            [lein-project-reader.core :as lpr])
-  (:import (java.io ByteArrayOutputStream)
-           (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
+            [hickory.core :as h])
+  (:import (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
 
-(def default-downloaded-matches-directory "downloaded-matches")
-(def now-in-readable-format
-  (jt/format "YYYY-MM-dd" (jt/local-date-time)))
-(def default-csv-file-path
-  (str "./all-games-" now-in-readable-format ".csv.bz2"))
 (def league-overview-season-link "https://kickern-hamburg.de/liga/ergebnisse-und-tabellen")
+
 (def season-year->id {"2024/25" "26"
                       "2023/24" "24"
                       "2022/23" "23"
@@ -196,8 +189,8 @@
 
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
-      (not (.exists
-          (io/file (str directory "/" filename))))))
+    (not (.exists
+           (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
   (->> file-path
@@ -250,29 +243,3 @@
        :body
        h/parse
        h/as-hickory))
-
-(defn create-cli-config [load-season-fn]
-  {:app         {:command     "kicker-league-scanner"
-                 :description "A command-line kicker stats scanner"
-                 :version     (:version (lpr/read-project))}
-   :global-opts [{:option  "match-directory-path"
-                  :short   "mdp"
-                  :as      (str "Location of all matches.")
-                  :type    :string
-                  :default default-downloaded-matches-directory}]
-   :commands    [{:command     "download" :short "d"
-                  :description ["downloads all matches for the given season"]
-                  :opts        [{:option  "season"
-                                 :short   "s"
-                                 :as      "target season"
-                                 :type    :string
-                                 :default current-season}]
-                  :runs        load-season-fn}
-                 {:command     "export" :short "s"
-                  :description "exports all matches to a given csv file"
-                  :opts        [{:option  "target-csv-file"
-                                 :short   "tcf"
-                                 :as      (str "Location for the csv file with all games.")
-                                 :type    :string
-                                 :default default-csv-file-path}]
-                  :runs        save-all-matches-to-csv}]})
