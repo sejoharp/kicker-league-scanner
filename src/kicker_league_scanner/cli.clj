@@ -8,8 +8,11 @@
 (def now-in-readable-format
   (jt/format "YYYY-MM-dd" (jt/local-date-time)))
 
+(def default-csv-file-name
+  (str "all-games-" now-in-readable-format ".csv.bz2"))
+
 (def default-csv-file-path
-  (str "./all-games-" now-in-readable-format ".csv.bz2"))
+  (str "./" default-csv-file-name))
 
 (defn create-cli-config [load-season-fn]
   {:app         {:command     "kicker-league-scanner"
@@ -35,4 +38,27 @@
                                  :as      (str "Location for the csv file with all games.")
                                  :type    :string
                                  :default default-csv-file-path}]
-                  :runs        io/save-all-matches-to-csv-file}]})
+                  :runs        io/save-all-matches-to-csv-file}
+                 {:command     "upload-all" :short "u"
+                  :description "uploads all matches to nextcloud"
+                  :opts        [{:option  "target-file-name"
+                                 :short   "tfn"
+                                 :as      (str "Name for bzip2 compress csv file with all games that will be created on nextcloud.")
+                                 :type    :string
+                                 :default default-csv-file-name}
+                                {:option  "target-domain"
+                                 :short   "td"
+                                 :as      "target domain"
+                                 :type    :string
+                                 :env "KICKER_TARGET_DOMAIN"}
+                                {:option "target-user"
+                                 :short  "tu"
+                                 :as     "target user"
+                                 :type   :string
+                                 :env    "KICKER_TARGET_USER"}
+                                {:option "target-password"
+                                 :short  "tp"
+                                 :as     "target password"
+                                 :type   :string
+                                 :env    "KICKER_TARGET_PASSWORD"}]
+                  :runs        io/save-all-matches-to-nextcloud}]})

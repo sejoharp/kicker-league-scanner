@@ -191,7 +191,7 @@
 (defn new-match? [directory link]
   (let [filename (link->filename link)]
     (not (.exists
-           (io/file (str directory "/" filename))))))
+          (io/file (str directory "/" filename))))))
 
 (defn read-match-from-edn [file-path]
   (->> file-path
@@ -207,14 +207,14 @@
               bzip2-stream (BZip2CompressorInputStream. file-stream)
               reader (io/reader bzip2-stream)]
     (doall
-      (csv/read-csv reader {:separator \;}))))
+     (csv/read-csv reader {:separator \;}))))
 
 #_(defn read-bzip2-csv [file-path]
     (with-open [file-stream (io/input-stream file-path)
                 bzip2-stream (BZip2CompressorInputStream. file-stream)
                 reader (io/reader bzip2-stream)]
       (doall
-        (csv/read-csv reader))))
+       (csv/read-csv reader))))
 
 (defn delete-file [path]
   (io/delete-file path true))
@@ -223,7 +223,6 @@
 
 (defn read-match-files [directory] (rest (file-seq (read-directory directory))))
 
-;TODO: use https://github.com/clojure/data.csv to write file. It can transform a list into csv.
 (defn save-all-matches-to-csv-file [{:keys [target-csv-file match-directory-path] :as options}]
   (prn "exporting matches to csv ..")
   (prn "options: " options)
@@ -254,10 +253,19 @@
     (.toByteArray ^ByteArrayOutputStream output-stream)))
 
 (defn upload-file [domain user password filename content-as-inputstream]
-  (client/put (str "https://" domain "/remote.php/dav/files/" user "/" filename)
-              {:body       content-as-inputstream
-               :basic-auth [user password]}))
+  (client/put (str "https://" domain "/remote.php/dav/files/" user "/all-games/" filename)
+              {:body          content-as-inputstream
+               :basic-auth    [user password]
+               :cookie-policy :standard}))
 
 (defn upload-matches [domain user password filename matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
-    (println (upload-file domain user password filename (io/input-stream matches-as-byte-array)))))
+    (upload-file domain user password filename (io/input-stream matches-as-byte-array))))
+
+(defn save-all-matches-to-nextcloud [{:keys [target-domain target-user target-password target-file-name match-directory-path] :as options}]
+  (prn "uploading all matches to nextcloud ..")
+  (prn "options: " (assoc options :target-password "***"))
+  (->> match-directory-path
+       read-match-files
+       (map read-match-from-edn)
+       (upload-matches target-domain target-user target-password target-file-name)))

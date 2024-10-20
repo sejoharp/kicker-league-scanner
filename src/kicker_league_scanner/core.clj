@@ -290,5 +290,5 @@
     (load-season {:match-directory-path cli/default-downloaded-matches-directory
                   :season               io/current-season})
     (io/save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
-                                 :target-csv-file           cli/default-csv-file-path})))
+                                      :target-csv-file           cli/default-csv-file-path})))
 
