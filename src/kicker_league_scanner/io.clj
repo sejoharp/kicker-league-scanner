@@ -262,7 +262,7 @@
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
     (upload-file domain user password (io/input-stream matches-as-byte-array))))
 
-(defn save-all-matches-to-nextcloud [{:keys [target-domain target-user target-password match-directory-path] :as options}]
+(defn upload-all-matches-to-nextcloud [{:keys [target-domain target-user target-password match-directory-path] :as options}]
   (prn "uploading all matches to nextcloud ..")
   (prn "options: " (assoc options :target-password "***"))
   (->> match-directory-path

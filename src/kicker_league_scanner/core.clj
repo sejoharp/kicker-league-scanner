@@ -1,6 +1,7 @@
 (ns kicker-league-scanner.core
   (:require [cli-matic.core :as cli-matic]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [hickory.select :as s]
             [kicker-league-scanner.cli :as cli]
             [kicker-league-scanner.io :as io])
@@ -29,10 +30,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -142,10 +143,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -242,41 +243,30 @@
   (prn (str "matches found: " (count matches)))
   matches)
 
-(defn log-new-matches-count [matches]
-  (prn (str "new matches found: " (count matches)))
-  matches)
-
-(defn log-valid-matches-count [matches]
-  (prn (str "valid matches found: " (count matches)))
-  matches)
-
-(defn log-parsed-matches-count [matches]
-  (prn (str "new matches parsed: " (count matches)))
-  matches)
-
 (def parse-match-from-link-fn (comp
-                               parse-valid-match
-                               io/html->hickory
-                               log-parsing-link))
+                                parse-valid-match
+                                io/html->hickory
+                                log-parsing-link))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]
-  (prn "downloading matches ..")
-  (prn "options: " options)
-  (->> season
-       io/get-season
-       get-league-links-from-league-overview
-       (map io/html->hickory)
-       (map get-match-links-from-league)
-       flatten
-       log-matches-count
-       (filter (partial io/new-match? match-directory-path))
-       log-new-matches-count
-       (map parse-match-from-link-fn)
-       log-parsed-matches-count
-       (filter some?)
-       log-valid-matches-count
-       (io/matches->edn-files! match-directory-path)))
+  (log/info "downloading matches ..")
+  (log/info "options: " options)
+  (let [found-matches (->> season
+                           io/get-season
+                           get-league-links-from-league-overview
+                           (map io/html->hickory)
+                           (map get-match-links-from-league)
+                           flatten)
+        new-matches (filter (partial io/new-match? match-directory-path) found-matches)
+        parsed-matches (map parse-match-from-link-fn new-matches)
+        valid-matches (filter some? parsed-matches)
+        new-state {:found-matches  (count found-matches)
+                   :new-matches    (count new-matches)
+                   :parsed-matches (count parsed-matches)
+                   :valid-matches  (count valid-matches)}]
+    (log/info "new state: " new-state)
+    (io/matches->edn-files! match-directory-path valid-matches)))
 
 
 
