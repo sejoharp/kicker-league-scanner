@@ -252,20 +252,20 @@
         (match->csv-file! writer match)))
     (.toByteArray ^ByteArrayOutputStream output-stream)))
 
-(defn upload-file [domain user password filename content-as-inputstream]
-  (client/put (str "https://" domain "/remote.php/dav/files/" user "/all-games/" filename)
+(defn upload-file [domain user password content-as-inputstream]
+  (client/put (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
               {:body          content-as-inputstream
                :basic-auth    [user password]
                :cookie-policy :standard}))
 
-(defn upload-matches [domain user password filename matches]
+(defn upload-matches [domain user password matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
-    (upload-file domain user password filename (io/input-stream matches-as-byte-array))))
+    (upload-file domain user password (io/input-stream matches-as-byte-array))))
 
-(defn save-all-matches-to-nextcloud [{:keys [target-domain target-user target-password target-file-name match-directory-path] :as options}]
+(defn save-all-matches-to-nextcloud [{:keys [target-domain target-user target-password match-directory-path] :as options}]
   (prn "uploading all matches to nextcloud ..")
   (prn "options: " (assoc options :target-password "***"))
   (->> match-directory-path
        read-match-files
        (map read-match-from-edn)
-       (upload-matches target-domain target-user target-password target-file-name)))
+       (upload-matches target-domain target-user target-password)))

@@ -41,12 +41,7 @@
                   :runs        io/save-all-matches-to-csv-file}
                  {:command     "upload-all" :short "u"
                   :description "uploads all matches to nextcloud"
-                  :opts        [{:option  "target-file-name"
-                                 :short   "tfn"
-                                 :as      (str "Name for bzip2 compress csv file with all games that will be created on nextcloud.")
-                                 :type    :string
-                                 :default default-csv-file-name}
-                                {:option  "target-domain"
+                  :opts        [{:option  "target-domain"
                                  :short   "td"
                                  :as      "target domain"
                                  :type    :string
