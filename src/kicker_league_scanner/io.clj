@@ -3,6 +3,7 @@
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [hickory.core :as h])
   (:import (java.io ByteArrayOutputStream)
            (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
@@ -253,18 +254,24 @@
     (.toByteArray ^ByteArrayOutputStream output-stream)))
 
 (defn upload-file [domain user password content-as-inputstream]
-  (client/put (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
+  (client/put (str "https://" domain "/remote.php/dav/files/" user "-games/all-games.csv.bz2")
               {:body          content-as-inputstream
                :basic-auth    [user password]
                :cookie-policy :standard}))
 
+(defn delete-old-file [domain user password]
+  (client/delete (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
+              {:basic-auth    [user password]
+               :cookie-policy :standard}))
+
 (defn upload-matches [domain user password matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
+    (delete-old-file domain user password)
     (upload-file domain user password (io/input-stream matches-as-byte-array))))
 
 (defn upload-all-matches-to-nextcloud [{:keys [target-domain target-user target-password match-directory-path] :as options}]
-  (prn "uploading all matches to nextcloud ..")
-  (prn "options: " (assoc options :target-password "***"))
+  (log/info "uploading all matches to nextcloud ..")
+  (log/info "options: " (assoc options :target-password "***"))
   (->> match-directory-path
        read-match-files
        (map read-match-from-edn)
