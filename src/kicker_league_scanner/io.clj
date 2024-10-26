@@ -261,8 +261,8 @@
 
 (defn delete-old-file [domain user password]
   (client/delete (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
-              {:basic-auth    [user password]
-               :cookie-policy :standard}))
+                 {:basic-auth    [user password]
+                  :cookie-policy :standard}))
 
 (defn upload-matches [domain user password matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
