@@ -273,9 +273,20 @@
 ;TODO: change author
 ;  howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 
+;TODO: add closable system:
+;  https://gist.github.com/andfadeev/176abae0a0d55b90492c67d2978ba6c0
+;  https://www.youtube.com/watch?v=a1TvDcDop2k
+
+;TODO: expose state with timestamp via status page to monitor with updatekuma
+
+;TODO: build jar with github actions
+
+;TODO: deploy to lxc with alpine linux and create a daemon with OpenRC
 
 (defn -main [& args]
   (cli-matic/run-cmd args (cli/create-cli-config load-season))
+
+
   (comment
     (load-season {:match-directory-path cli/default-downloaded-matches-directory
                   :season               io/current-season})
