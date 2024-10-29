@@ -276,12 +276,13 @@
 ;TODO: add closable system:
 ;  https://gist.github.com/andfadeev/176abae0a0d55b90492c67d2978ba6c0
 ;  https://www.youtube.com/watch?v=a1TvDcDop2k
+;  https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
 
 ;TODO: expose state with timestamp via status page to monitor with updatekuma
 
-;TODO: build jar with github actions
-
 ;TODO: deploy to lxc with alpine linux and create a daemon with OpenRC
+
+;TODO: build jar with github actions
 
 (defn -main [& args]
   (cli-matic/run-cmd args (cli/create-cli-config load-season))
