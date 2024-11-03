@@ -5,6 +5,9 @@
             [hickory.select :as s]
             [kicker-league-scanner.cli :as cli]
             [kicker-league-scanner.io :as io])
+  (:import [java.time LocalDateTime ZonedDateTime]
+           [java.time.format DateTimeFormatter]
+           [java.time ZoneId])
 
   (:gen-class))
 
@@ -30,10 +33,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                   (completed-match? (:content %))
-                   (some? (get-in % [:attrs :href]))
-                   (str/includes? (get-in % [:attrs :href])
-                                  "begegnung_spielplan")))
+                    (completed-match? (:content %))
+                    (some? (get-in % [:attrs :href]))
+                    (str/includes? (get-in % [:attrs :href])
+                                   "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -143,10 +146,10 @@
 
 (defn reformat-date [date-string]
   (.format
-   (java.text.SimpleDateFormat. "yyyy-MM-dd")
-   (.parse
-    (java.text.SimpleDateFormat. "dd.MM.yyyy")
-    date-string)))
+    (java.text.SimpleDateFormat. "yyyy-MM-dd")
+    (.parse
+      (java.text.SimpleDateFormat. "dd.MM.yyyy")
+      date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -244,9 +247,14 @@
   matches)
 
 (def parse-match-from-link-fn (comp
-                               parse-valid-match
-                               io/html->hickory
-                               log-parsing-link))
+                                parse-valid-match
+                                io/html->hickory
+                                log-parsing-link))
+
+(defn current-user-friendly-timestamp []
+  (let [now (ZonedDateTime/now (ZoneId/of "UTC")) ; You can change "UTC" to your desired time zone
+        formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss z")]
+    (.format now formatter)))
 
 (defn load-season [{:keys [season match-directory-path]
                     :as   options}]
@@ -264,9 +272,11 @@
         new-state {:found-matches  (count found-matches)
                    :new-matches    (count new-matches)
                    :parsed-matches (count parsed-matches)
-                   :valid-matches  (count valid-matches)}]
+                   :valid-matches  (count valid-matches)
+                   :last-run (current-user-friendly-timestamp)}]
     (log/info "new state: " new-state)
-    (io/matches->edn-files! match-directory-path valid-matches)))
+    (io/matches->edn-files! match-directory-path valid-matches)
+    new-state))
 
 
 
@@ -292,5 +302,5 @@
     (load-season {:match-directory-path cli/default-downloaded-matches-directory
                   :season               io/current-season})
     (io/save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
-                                      :target-csv-file           cli/default-csv-file-path})))
+                                      :target-csv-file      cli/default-csv-file-path})))
 
