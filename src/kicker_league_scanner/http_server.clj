@@ -1,8 +1,8 @@
 (ns kicker-league-scanner.http-server
-  (:require [clojure.tools.logging :as log]
-            [org.httpkit.server :as hk-server]
+  (:require [clojure.core.async :as async]
             [clojure.data.json :as json]
-            [clojure.core.async :as async]))
+            [clojure.tools.logging :as log]
+            [org.httpkit.server :as hk-server]))
 
 (defn create-status-handler [app-status request]
   {:status  200
@@ -32,4 +32,5 @@
          http-server (hk-server/run-server (create-app app-status) {:port 80})]
      (log/info (str "http server started: http://localhost"))
      (when (async/<!! close-channel)
+       (log/info (str "http server stopped!"))
        (http-server)))))

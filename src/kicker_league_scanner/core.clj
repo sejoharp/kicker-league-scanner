@@ -6,8 +6,8 @@
             [kicker-league-scanner.cli :as cli]
             [kicker-league-scanner.io :as io])
   (:import [java.time LocalDateTime ZonedDateTime]
-           [java.time.format DateTimeFormatter]
-           [java.time ZoneId])
+           [java.time ZoneId]
+           [java.time.format DateTimeFormatter])
 
   (:gen-class))
 
@@ -33,10 +33,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -146,10 +146,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -247,9 +247,9 @@
   matches)
 
 (def parse-match-from-link-fn (comp
-                                parse-valid-match
-                                io/html->hickory
-                                log-parsing-link))
+                               parse-valid-match
+                               io/html->hickory
+                               log-parsing-link))
 
 (defn current-user-friendly-timestamp []
   (let [now (ZonedDateTime/now (ZoneId/of "UTC")) ; You can change "UTC" to your desired time zone
@@ -294,9 +294,9 @@
 
 ;TODO: build jar with github actions
 
+
 (defn -main [& args]
   (cli-matic/run-cmd args (cli/create-cli-config load-season))
-
 
   (comment
     (load-season {:match-directory-path cli/default-downloaded-matches-directory
