@@ -75,4 +75,4 @@
                                  :as     "target password"
                                  :type   :string
                                  :env    "KICKER_TARGET_PASSWORD"}]
-                  :runs        http-server/start-server}]})
+                  :runs        http-server/start-server-blocking-mode}]})

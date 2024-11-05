@@ -20,17 +20,20 @@
       "/status" (create-status-handler app-status request)
       (not-found-response request))))
 
-(defn start-server
-  ([options]
-   (start-server (async/chan) options))
-  ([close-channel options]
-   (let [app-status (atom {:found-matches  nil
-                           :new-matches    nil
-                           :parsed-matches nil
-                           :valid-matches  nil
-                           :last-run       nil})
-         http-server (hk-server/run-server (create-app app-status) {:port 80})]
-     (log/info (str "http server started: http://localhost"))
-     (when (async/<!! close-channel)
-       (log/info (str "http server stopped!"))
-       (http-server)))))
+(defn stop-server [server-handle]
+  (hk-server/server-stop! server-handle))
+
+(defn start-server [options]
+  (let [app-status (atom {:found-matches  nil
+                          :new-matches    nil
+                          :parsed-matches nil
+                          :valid-matches  nil
+                          :last-run       nil})
+        http-server (hk-server/run-server (create-app app-status) {:port                 80
+                                                                   :legacy-return-value? false})]
+    (log/info (str "http server started: http://localhost"))
+    http-server))
+
+(defn start-server-blocking-mode [options]
+  (start-server options)
+  (async/<!! (async/chan)))
