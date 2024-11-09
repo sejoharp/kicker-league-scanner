@@ -33,7 +33,7 @@
                                  :type    :string
                                  :default io/current-season}]
                   :runs        io/load-season!}
-                 {:command     "export" :short "s"
+                 {:command     "export" :short "e"
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
                                  :short   "tcf"
@@ -59,7 +59,7 @@
                                  :type   :string
                                  :env    "KICKER_TARGET_PASSWORD"}]
                   :runs        io/upload-all-matches-to-nextcloud!}
-                 {:command     "server" :short "u"
+                 {:command     "server" :short "s"
                   :description "uploads all matches to nextcloud"
                   :opts        [{:option "target-domain"
                                  :short  "td"
