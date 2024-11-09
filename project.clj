@@ -9,6 +9,7 @@
                  [clj-http "3.12.3"]
                  [cli-matic "0.5.4"]
                  [http-kit "2.8.0"]
+                 [overtone/at-at "1.4.65"]
                  [org.clojure/data.json "2.5.0"]
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/data.csv "1.1.0"]

@@ -2,7 +2,9 @@
   (:require [clojure.core.async :as async]
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]
-            [org.httpkit.server :as hk-server]))
+            [kicker-league-scanner.io :as io]
+            [org.httpkit.server :as hk-server]
+            [overtone.at-at :as at]
             [kicker-league-scanner.parser :as parser]))
 
 (defn create-status-handler [app-status request]
@@ -24,12 +26,18 @@
 (defn stop-server [server-handle]
   (hk-server/server-stop! server-handle))
 
-(defn start-server [options]
+(def twenty-four-hours 86400000)
+
+(defn start-server [{:keys [scheduled-fn scheduled-interval] :as options}]
   (let [app-status (atom {:found-matches  nil
                           :new-matches    nil
                           :parsed-matches nil
                           :valid-matches  nil
                           :last-run       nil})
+        at-pool (at/mk-pool)
+        scheduled-job (if (and scheduled-fn scheduled-interval)
+                        (at/every scheduled-interval (partial scheduled-fn app-status) at-pool {:initial-delay scheduled-interval})
+                        (at/every twenty-four-hours (partial io/update-data! options app-status) at-pool))
         http-server (hk-server/run-server (create-app app-status) {:port                 80
                                                                    :legacy-return-value? false})]
     (log/info (str "http server started: http://localhost"))
