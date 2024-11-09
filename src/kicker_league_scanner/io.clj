@@ -4,7 +4,9 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [hickory.core :as h])
+            [hickory.core :as h]
+            [kicker-league-scanner.csv-format :as csv-format]
+            [kicker-league-scanner.parser :as parser])
   (:import (java.io ByteArrayOutputStream)
            (org.apache.commons.compress.compressors.bzip2 BZip2CompressorInputStream BZip2CompressorOutputStream)))
 
@@ -28,140 +30,9 @@
                       "2009"    "1"})
 (def current-season "2024/25")
 
-(defn calculate-game-points [game] (cond
-                                     (= 6 (:score (:home game))) [2 0]
-                                     (= 6 (:score (:guest game))) [0 2]
-                                     (= (:score (:home game)) (:score (:guest game))) [1 1]
-                                     :else [0 0]))
-
-(defn calculate-match-score [games]
-  (let [game-points (map calculate-game-points games)]
-    (loop [game-points-list game-points
-           result [0 0]]
-      (if (= 0 (count game-points-list))
-        result
-        (let [home-points (first (first game-points-list))
-              guest-points (second (first game-points-list))]
-          (recur (rest game-points-list) [(+ (first result)
-                                             home-points)
-                                          (+ (second result)
-                                             guest-points)]))))))
-
-(defn calculate-points [match]
-  (let [match-scores (calculate-match-score (:games match))]
-    (cond
-      (= (first match-scores) (second match-scores)) [1 1]
-      (> (first match-scores) (second match-scores)) [2 0]
-      (< (first match-scores) (second match-scores)) [0 2])))
-
-(defn calculate-quarter [date]
-  (let [month (Integer/parseInt (second (str/split date #"-")))
-        year (first (str/split date #"-"))]
-    (cond
-      (<= month 3) (str year "/01")
-      (<= month 6) (str year "/02")
-      (<= month 9) (str year "/03")
-      (>= month 10) (str year "/04"))))
-
-(defn game->csv [match game]
-  (let [home-players (:names (:home game))
-        guest-players (:names (:guest game))
-        game-points (calculate-game-points game)
-        quarter (calculate-quarter (:date match))]
-    [[(:date match)
-      (:match-day match)
-      (:position game)
-      "H"
-      (:home-team match)
-      (first home-players)
-      (if (= 2 (count home-players))
-        (second home-players)
-        "XXXX")
-      (:score (:home game))
-      (:score (:guest game))
-      (first guest-players)
-      (if (= 2 (count guest-players))
-        (second guest-players)
-        "XXXX")
-      (:guest-team match)
-      "G"
-      (first game-points)
-      (second game-points)
-      quarter
-      1]
-     [(:date match)
-      (:match-day match)
-      (:position game)
-      "H"
-      (:home-team match)
-      (if (= 2 (count home-players))
-        (second home-players)
-        "XXXX")
-      (first home-players)
-      (:score (:home game))
-      (:score (:guest game))
-      (if (= 2 (count guest-players))
-        (second guest-players)
-        "XXXX")
-      (first guest-players)
-      (:guest-team match)
-      "G"
-      (first game-points)
-      (second game-points)
-      quarter
-      1]
-     [(:date match)
-      (:match-day match)
-      (:position game)
-      "G"
-      (:guest-team match)
-      (first guest-players)
-      (if (= 2 (count guest-players))
-        (second guest-players)
-        "XXXX")
-      (:score (:guest game))
-      (:score (:home game))
-      (first home-players)
-      (if (= 2 (count home-players))
-        (second home-players)
-        "XXXX")
-      (:home-team match)
-      "H"
-      (second game-points)
-      (first game-points)
-      quarter
-      1]
-     [(:date match)
-      (:match-day match)
-      (:position game)
-      "G"
-      (:guest-team match)
-      (if (= 2 (count guest-players))
-        (second guest-players)
-        "XXXX")
-      (first guest-players)
-      (:score (:guest game))
-      (:score (:home game))
-      (if (= 2 (count home-players))
-        (second home-players)
-        "XXXX")
-      (first home-players)
-      (:home-team match)
-      "H"
-      (second game-points)
-      (first game-points)
-      quarter
-      1]]))
-
-(defn match->csv [{games :games :as match}]
-  (let [game->csv-fn (partial game->csv match)]
-    (reduce (fn [acc game]
-              (into acc (game->csv-fn game)))
-            []
-            games)))
 
 (defn match->csv-file! [file-writer match]
-  (csv/write-csv file-writer (match->csv match) :separator \;))
+  (csv/write-csv file-writer (csv-format/match->csv match) :separator \;))
 
 (defn matches->csv-file! [file-path matches]
   (io/make-parents file-path)
@@ -236,7 +107,7 @@
   (let [html (slurp overview-link)]
     (h/as-hickory (h/parse html))))
 
-(defn get-season [season]
+(defn get-season! [season]
   (->> {:form-params {:filter_saison_id (get season-year->id season)
                       :ok               "Los"
                       :task             "veranstaltungen"}}
@@ -253,26 +124,70 @@
         (match->csv-file! writer match)))
     (.toByteArray ^ByteArrayOutputStream output-stream)))
 
-(defn upload-file [domain user password content-as-inputstream]
+(defn upload-file! [domain user password content-as-inputstream]
   (client/put (str "https://" domain "/remote.php/dav/files/" user "-games/all-games.csv.bz2")
               {:body          content-as-inputstream
                :basic-auth    [user password]
                :cookie-policy :standard}))
 
-(defn delete-old-file [domain user password]
+(defn delete-old-file! [domain user password]
   (client/delete (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
                  {:basic-auth    [user password]
                   :cookie-policy :standard}))
 
-(defn upload-matches [domain user password matches]
+(defn upload-matches! [domain user password matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
-    (delete-old-file domain user password)
-    (upload-file domain user password (io/input-stream matches-as-byte-array))))
+    (delete-old-file! domain user password)
+    (upload-file! domain user password (io/input-stream matches-as-byte-array))))
 
-(defn upload-all-matches-to-nextcloud [{:keys [target-domain target-user target-password match-directory-path] :as options}]
+(defn upload-all-matches-to-nextcloud! [{:keys [target-domain target-user target-password match-directory-path] :as options}]
   (log/info "uploading all matches to nextcloud ..")
   (log/info "options: " (assoc options :target-password "***"))
   (->> match-directory-path
        read-match-files
        (map read-match-from-edn)
-       (upload-matches target-domain target-user target-password)))
+       (upload-matches! target-domain target-user target-password)))
+
+
+(defn log-parsing-link [link]
+  (prn (str "parsing " link))
+  link)
+
+(def parse-match-from-link-fn (comp
+                                parser/parse-valid-match
+                                html->hickory
+                                log-parsing-link))
+
+(defn load-season! [{:keys [season match-directory-path]
+                    :as    options}]
+  (log/info "downloading matches ..")
+  (log/info "options: " options)
+  (let [found-matches (->> season
+                           get-season!
+                           parser/get-league-links-from-league-overview
+                           (map html->hickory)
+                           (map parser/get-match-links-from-league)
+                           flatten)
+        new-matches (filter (partial new-match? match-directory-path) found-matches)
+        parsed-matches (map parse-match-from-link-fn new-matches)
+        valid-matches (filter some? parsed-matches)
+        new-state {:found-matches  (count found-matches)
+                   :new-matches    (count new-matches)
+                   :parsed-matches (count parsed-matches)
+                   :valid-matches  (count valid-matches)
+                   :last-run (parser/current-user-friendly-timestamp)}]
+    (log/info "new state: " new-state)
+    (matches->edn-files! match-directory-path valid-matches)
+    new-state))
+
+(defn update-data! [options app-status]
+  (let [new-state (load-season! options)]
+    (when (> (:new-matches new-state) 0)
+      (upload-all-matches-to-nextcloud! options)
+      (reset! app-status new-state))))
+
+(comment
+  (load-season! {:match-directory-path cli/default-downloaded-matches-directory
+                :season                io/current-season})
+  (save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
+                                    :target-csv-file      cli/default-csv-file-path}))
