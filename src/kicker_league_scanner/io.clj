@@ -30,7 +30,6 @@
                       "2009"    "1"})
 (def current-season "2024/25")
 
-
 (defn match->csv-file! [file-writer match]
   (csv/write-csv file-writer (csv-format/match->csv match) :separator \;))
 
@@ -148,18 +147,17 @@
        (map read-match-from-edn)
        (upload-matches! target-domain target-user target-password)))
 
-
 (defn log-parsing-link [link]
   (prn (str "parsing " link))
   link)
 
 (def parse-match-from-link-fn (comp
-                                parser/parse-valid-match
-                                html->hickory
-                                log-parsing-link))
+                               parser/parse-valid-match
+                               html->hickory
+                               log-parsing-link))
 
 (defn load-season! [{:keys [season match-directory-path]
-                    :as    options}]
+                     :as    options}]
   (log/info "downloading matches ..")
   (log/info "options: " options)
   (let [found-matches (->> season
@@ -188,6 +186,6 @@
 
 (comment
   (load-season! {:match-directory-path cli/default-downloaded-matches-directory
-                :season                io/current-season})
+                 :season                io/current-season})
   (save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
-                                    :target-csv-file      cli/default-csv-file-path}))
+                                 :target-csv-file      cli/default-csv-file-path}))

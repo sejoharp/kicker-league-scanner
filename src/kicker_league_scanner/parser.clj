@@ -1,9 +1,8 @@
 (ns kicker-league-scanner.parser
   (:require [clojure.string :as str]
             [hickory.select :as s])
-  (:import (java.time ZoneId ZonedDateTime)
+  (:import (java.time ZonedDateTime ZoneId)
            (java.time.format DateTimeFormatter)))
-
 
 (defn add-kickern-hamburg-domain [path]
   (str "https://kickern-hamburg.de" path))
@@ -27,10 +26,10 @@
                                 parsed-html)]
     (->> link-snippets
          (filter #(and
-                    (completed-match? (:content %))
-                    (some? (get-in % [:attrs :href]))
-                    (str/includes? (get-in % [:attrs :href])
-                                   "begegnung_spielplan")))
+                   (completed-match? (:content %))
+                   (some? (get-in % [:attrs :href]))
+                   (str/includes? (get-in % [:attrs :href])
+                                  "begegnung_spielplan")))
          (map #(get-in % [:attrs :href]))
          (map add-kickern-hamburg-domain))))
 
@@ -140,10 +139,10 @@
 
 (defn reformat-date [date-string]
   (.format
-    (java.text.SimpleDateFormat. "yyyy-MM-dd")
-    (.parse
-      (java.text.SimpleDateFormat. "dd.MM.yyyy")
-      date-string)))
+   (java.text.SimpleDateFormat. "yyyy-MM-dd")
+   (.parse
+    (java.text.SimpleDateFormat. "dd.MM.yyyy")
+    date-string)))
 
 (defn parse-date [match-page]
   (let [date-snippet (s/select (s/descendant (s/and (s/class "uk-overflow-auto")
@@ -231,7 +230,6 @@
   (if (valid-match? match-page)
     (parse-match match-page)
     nil))
-
 
 (defn log-matches-count [matches]
   (prn (str "matches found: " (count matches)))

@@ -36,7 +36,6 @@
             ["2023-10-12" 3 5 "G" "Hamburg Privateers 08 (NR)" "XXXX" "Zierott, Ulli" 1 6 "XXXX" "Xander" "Anboard" "H" 0 2 "2023/04" 1]]
            (csv/game->csv external-test-match external-test-game)))))
 
-
 (deftest match->csv-test
   (let [match {:date       "2023-09-05"
                :home-team  "Flying Circus"
@@ -58,7 +57,6 @@
   (is (= "2023/01" (csv-format/calculate-quarter "2023-01-02")))
   (is (= "2023/02" (csv-format/calculate-quarter "2023-04-06")))
   (is (= "2023/04" (csv-format/calculate-quarter "2023-10-11"))))
-
 
 (deftest calculate-game-points-test
   (is (= [2 0]

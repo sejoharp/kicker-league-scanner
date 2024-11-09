@@ -1,7 +1,6 @@
 (ns kicker-league-scanner.csv-format
   (:require [clojure.string :as str]))
 
-
 (defn calculate-game-points [game] (cond
                                      (= 6 (:score (:home game))) [2 0]
                                      (= 6 (:score (:guest game))) [0 2]

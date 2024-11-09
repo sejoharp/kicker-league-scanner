@@ -1,8 +1,8 @@
 (ns kicker-league-scanner.cli
   (:require [java-time.api :as jt]
             [kicker-league-scanner.http-server :as http-server]
-            [kicker-league-scanner.parser :as parser]
             [kicker-league-scanner.io :as io]
+            [kicker-league-scanner.parser :as parser]
             [lein-project-reader.core :as lpr]))
 
 (def default-downloaded-matches-directory "downloaded-matches")

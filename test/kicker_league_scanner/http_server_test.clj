@@ -26,8 +26,6 @@
         (println "test failed" e))
       (finally (server/stop-server server)))))
 
-
-
 (deftest updates-status-after-downloading-new-matches
   (let [server (server/start-server {:scheduled-fn       scheduled-fn-mock
                                      :scheduled-interval 1})]

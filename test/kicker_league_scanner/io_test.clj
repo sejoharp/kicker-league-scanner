@@ -47,11 +47,9 @@
            (io/read-match-from-edn path)))
     (io/delete-file path)))
 
-
 (deftest transforms-link-to-filename
   (is (= "task=begegnung_spielplan-veranstaltungid=237-id=15478.edn"
          (io/link->filename "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=237&id=15478"))))
-
 
 (deftest reads-html-and-parses-match
   (let [match-link "test/resources/match.html"

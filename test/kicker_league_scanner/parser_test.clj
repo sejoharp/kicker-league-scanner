@@ -3,7 +3,6 @@
   (:require [kicker-league-scanner.io :as io]
             [kicker-league-scanner.parser :as parser]))
 
-
 (deftest html->hickory-test
   (let [parsed-html (io/html->hickory "test/resources/league.html")]
     (is (= :document
