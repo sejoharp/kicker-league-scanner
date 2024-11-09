@@ -3,6 +3,7 @@
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]
             [org.httpkit.server :as hk-server]))
+            [kicker-league-scanner.parser :as parser]))
 
 (defn create-status-handler [app-status request]
   {:status  200
