@@ -1,8 +1,6 @@
 (ns kicker-league-scanner.parser
-  (:require [kicker-league-scanner.io :as io]
-            [hickory.select :as s]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log])
+  (:require [clojure.string :as str]
+            [hickory.select :as s])
   (:import (java.time ZoneId ZonedDateTime)
            (java.time.format DateTimeFormatter)))
 
@@ -234,48 +232,12 @@
     (parse-match match-page)
     nil))
 
-(defn log-parsing-link [link]
-  (prn (str "parsing " link))
-  link)
 
 (defn log-matches-count [matches]
   (prn (str "matches found: " (count matches)))
   matches)
 
-(def parse-match-from-link-fn (comp
-                                parse-valid-match
-                                io/html->hickory
-                                log-parsing-link))
-
 (defn current-user-friendly-timestamp []
   (let [now (ZonedDateTime/now (ZoneId/of "UTC")) ; You can change "UTC" to your desired time zone
         formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss z")]
     (.format now formatter)))
-
-(defn load-season [{:keys [season match-directory-path]
-                    :as   options}]
-  (log/info "downloading matches ..")
-  (log/info "options: " options)
-  (let [found-matches (->> season
-                           io/get-season
-                           get-league-links-from-league-overview
-                           (map io/html->hickory)
-                           (map get-match-links-from-league)
-                           flatten)
-        new-matches (filter (partial io/new-match? match-directory-path) found-matches)
-        parsed-matches (map parse-match-from-link-fn new-matches)
-        valid-matches (filter some? parsed-matches)
-        new-state {:found-matches  (count found-matches)
-                   :new-matches    (count new-matches)
-                   :parsed-matches (count parsed-matches)
-                   :valid-matches  (count valid-matches)
-                   :last-run (current-user-friendly-timestamp)}]
-    (log/info "new state: " new-state)
-    (io/matches->edn-files! match-directory-path valid-matches)
-    new-state))
-
-(comment
-  (load-season {:match-directory-path cli/default-downloaded-matches-directory
-                :season               io/current-season})
-  (io/save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
-                                    :target-csv-file      cli/default-csv-file-path}))

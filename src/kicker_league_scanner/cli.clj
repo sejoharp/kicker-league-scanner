@@ -1,6 +1,7 @@
 (ns kicker-league-scanner.cli
   (:require [java-time.api :as jt]
             [kicker-league-scanner.http-server :as http-server]
+            [kicker-league-scanner.parser :as parser]
             [kicker-league-scanner.io :as io]
             [lein-project-reader.core :as lpr]))
 
@@ -15,7 +16,7 @@
 (def default-csv-file-path
   (str "./" default-csv-file-name))
 
-(defn create-cli-config [load-season-fn]
+(defn create-cli-config []
   {:app         {:command     "kicker-league-scanner"
                  :description "A command-line kicker stats scanner"
                  :version     (:version (lpr/read-project))}
@@ -31,7 +32,7 @@
                                  :as      "target season"
                                  :type    :string
                                  :default io/current-season}]
-                  :runs        load-season-fn}
+                  :runs        io/load-season!}
                  {:command     "export" :short "s"
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
@@ -57,7 +58,7 @@
                                  :as     "target password"
                                  :type   :string
                                  :env    "KICKER_TARGET_PASSWORD"}]
-                  :runs        io/upload-all-matches-to-nextcloud}
+                  :runs        io/upload-all-matches-to-nextcloud!}
                  {:command     "server" :short "u"
                   :description "uploads all matches to nextcloud"
                   :opts        [{:option "target-domain"

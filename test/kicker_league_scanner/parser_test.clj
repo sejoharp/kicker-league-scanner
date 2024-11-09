@@ -240,25 +240,3 @@
             :match-day  1}
            (parser/parse-match match-html)))
     (is (nil? (parser/parse-valid-match invalid-match-html)))))
-
-(deftest reads-html-and-parses-match
-  (let [match-link "test/resources/match.html"
-        match (parser/parse-match-from-link-fn match-link)]
-    (is (true? (contains? match :date)))
-    (is (true? (contains? match :home-team)))
-    (is (true? (contains? match :guest-team)))
-    (is (true? (contains? match :games)))
-    (is (true? (contains? match :link)))
-    (is (true? (contains? match :match-day)))
-    (is (= 16 (count (:games match))))))
-
-(deftest reads-html-and-parses-match-and-finds-all-games
-  (let [match-link "test/resources/match-with-unexpected-missing-games.html"
-        match (parser/parse-match-from-link-fn match-link)]
-    (is (true? (contains? match :date)))
-    (is (true? (contains? match :home-team)))
-    (is (true? (contains? match :guest-team)))
-    (is (true? (contains? match :games)))
-    (is (true? (contains? match :link)))
-    (is (true? (contains? match :match-day)))
-    (is (= 16 (count (:games match))))))
