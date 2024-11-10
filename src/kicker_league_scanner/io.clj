@@ -169,18 +169,18 @@
         new-matches (filter (partial new-match? match-directory-path) found-matches)
         parsed-matches (map parse-match-from-link-fn new-matches)
         valid-matches (filter some? parsed-matches)
-        new-state {:found-matches  (count found-matches)
-                   :new-matches    (count new-matches)
-                   :parsed-matches (count parsed-matches)
-                   :valid-matches  (count valid-matches)
-                   :last-run (parser/current-user-friendly-timestamp)}]
+        new-state {:found-match-count  (count found-matches)
+                   :new-match-count    (count new-matches)
+                   :parsed-match-count (count parsed-matches)
+                   :valid-match-count  (count valid-matches)
+                   :last-run           (parser/current-user-friendly-timestamp)}]
     (log/info "new state: " new-state)
     (matches->edn-files! match-directory-path valid-matches)
     new-state))
 
 (defn update-data! [options app-status]
   (let [new-state (load-season! options)]
-    (when (> (:new-matches new-state) 0)
+    (when (> (:new-match-count new-state) 0)
       (upload-all-matches-to-nextcloud! options)
       (reset! app-status new-state))))
 

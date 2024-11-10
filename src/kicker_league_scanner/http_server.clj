@@ -17,6 +17,7 @@
    :headers {"Content-Type" "text/plain"}
    :body    "Not Found"})
 
+;TODO: rename routes
 (defn create-app [app-status]
   (fn [request]
     (case (:uri request)
@@ -29,11 +30,11 @@
 (def twenty-four-hours 86400000)
 
 (defn start-server [{:keys [scheduled-fn scheduled-interval] :as options}]
-  (let [app-status (atom {:found-matches  nil
-                          :new-matches    nil
-                          :parsed-matches nil
-                          :valid-matches  nil
-                          :last-run       nil})
+  (let [app-status (atom {:found-match-count  nil
+                          :new-match-count    nil
+                          :parsed-match-count nil
+                          :valid-match-count  nil
+                          :last-run           nil})
         at-pool (at/mk-pool)
         scheduled-job (if (and scheduled-fn scheduled-interval)
                         (at/every scheduled-interval (partial scheduled-fn app-status) at-pool {:initial-delay scheduled-interval})
