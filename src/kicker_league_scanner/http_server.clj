@@ -17,8 +17,7 @@
    :headers {"Content-Type" "text/plain"}
    :body    "Not Found"})
 
-;TODO: rename routes
-(defn create-app [app-status]
+(defn routes [app-status]
   (fn [request]
     (case (:uri request)
       "/status" (create-status-handler app-status request)
@@ -39,7 +38,7 @@
         scheduled-job (if (and scheduled-fn scheduled-interval)
                         (at/every scheduled-interval (partial scheduled-fn app-status) at-pool {:initial-delay scheduled-interval})
                         (at/every twenty-four-hours (partial io/update-data! options app-status) at-pool))
-        http-server (hk-server/run-server (create-app app-status) {:port                 80
+        http-server (hk-server/run-server (routes app-status) {:port                     80
                                                                    :legacy-return-value? false})]
     (log/info (str "http server started: http://localhost"))
     http-server))
