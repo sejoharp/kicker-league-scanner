@@ -86,6 +86,23 @@ OPTIONS:
    -?, --help
 ```
 
+## Todos
+[ ] show new match titles on status page, to see weather updatig still works
+
+[ ] deploy to lxc with alpine linux and create a daemon with OpenRC
+
+[ ] build jar with github actions
+
+[ ] change author
+- howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
+
+[ ] add closable system:
+- https://gist.github.com/andfadeev/176abae0a0d55b90492c67d2978ba6c0
+- https://www.youtube.com/watch?v=a1TvDcDop2k
+- https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
+
+[x] expose state with timestamp via status page to monitor with updatekuma
+
 ## Examples
 ...
 
