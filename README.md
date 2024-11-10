@@ -87,8 +87,6 @@ OPTIONS:
 ```
 
 ## Todos
-[ ] show new match titles on status page, to see weather updatig still works
-
 [ ] deploy to lxc with alpine linux and create a daemon with OpenRC
 
 [ ] build jar with github actions
@@ -102,6 +100,8 @@ OPTIONS:
 - https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
 
 [x] expose state with timestamp via status page to monitor with updatekuma
+
+[x] show new match titles on status page, to see weather updatig still works
 
 ## Examples
 ...

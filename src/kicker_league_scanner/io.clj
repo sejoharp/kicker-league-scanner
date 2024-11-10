@@ -156,8 +156,14 @@
                                html->hickory
                                log-parsing-link))
 
+(defn match->status-entry [match]
+  {:date       (:date match)
+   :home-team  (:home-team match)
+   :guest-team (:guest-team match)
+   :link       (:link match)})
+
 (defn load-season! [{:keys [season match-directory-path]
-                     :as    options}]
+                     :as   options}]
   (log/info "downloading matches ..")
   (log/info "options: " options)
   (let [found-matches (->> season
@@ -173,6 +179,7 @@
                    :new-match-count    (count new-matches)
                    :parsed-match-count (count parsed-matches)
                    :valid-match-count  (count valid-matches)
+                   :valid-matches      (map match->status-entry valid-matches)
                    :last-run           (parser/current-user-friendly-timestamp)}]
     (log/info "new state: " new-state)
     (matches->edn-files! match-directory-path valid-matches)
@@ -186,6 +193,6 @@
 
 (comment
   (load-season! {:match-directory-path cli/default-downloaded-matches-directory
-                 :season                io/current-season})
+                 :season               io/current-season})
   (save-all-matches-to-csv-file {:match-directory-path cli/default-downloaded-matches-directory
                                  :target-csv-file      cli/default-csv-file-path}))
