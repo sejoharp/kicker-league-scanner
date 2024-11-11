@@ -124,15 +124,29 @@
     (.toByteArray ^ByteArrayOutputStream output-stream)))
 
 (defn upload-file! [domain user password content-as-inputstream]
-  (client/put (str "https://" domain "/remote.php/dav/files/" user "-games/all-games.csv.bz2")
-              {:body          content-as-inputstream
-               :basic-auth    [user password]
-               :cookie-policy :standard}))
+  (let [url (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")]
+    (log/info "uploading: " url)
+    (try
+      (client/put url
+                  {:body          content-as-inputstream
+                   :basic-auth    [user password]
+                   :cookie-policy :standard})
+      (log/info "uploading done: " url)
+      (catch Exception e
+        (log/error "uploading file failed:" e)))))
 
 (defn delete-old-file! [domain user password]
-  (client/delete (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")
-                 {:basic-auth    [user password]
-                  :cookie-policy :standard}))
+  (let [url (str "https://" domain "/remote.php/dav/files/" user "/all-games/all-games.csv.bz2")]
+    (log/info "deleting: " url)
+    (try
+      (client/delete url
+                     {:basic-auth    [user password]
+                      :cookie-policy :standard})
+      (log/info "deleting done: " url)
+      (catch Exception e
+        (if (= (:status (ex-data e)) 404)
+          (log/info "no file to delete found.")
+          (log/error "something went wrong:" e))))))
 
 (defn upload-matches! [domain user password matches]
   (let [matches-as-byte-array (create-matches-as-byte-array matches)]
@@ -140,7 +154,6 @@
     (upload-file! domain user password (io/input-stream matches-as-byte-array))))
 
 (defn upload-all-matches-to-nextcloud! [{:keys [target-domain target-user target-password match-directory-path] :as options}]
-  (log/info "uploading all matches to nextcloud ..")
   (log/info "options: " (assoc options :target-password "***"))
   (->> match-directory-path
        read-match-files
@@ -165,7 +178,7 @@
 (defn load-season! [{:keys [season match-directory-path]
                      :as   options}]
   (log/info "downloading matches ..")
-  (log/info "options: " options)
+  (log/info "options: " (assoc options :target-password "***"))
   (let [found-matches (->> season
                            get-season!
                            parser/get-league-links-from-league-overview
@@ -188,8 +201,8 @@
 (defn update-data! [options app-status]
   (let [new-state (load-season! options)]
     (when (> (:new-match-count new-state) 0)
-      (upload-all-matches-to-nextcloud! options)
-      (reset! app-status new-state))))
+      (upload-all-matches-to-nextcloud! options))
+    (reset! app-status new-state)))
 
 (comment
   (load-season! {:match-directory-path cli/default-downloaded-matches-directory
