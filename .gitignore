@@ -13,7 +13,6 @@ pom.xml.asc
 /.prepl-port
 .hgignore
 .hg/
-downloaded-matches/*
 *.csv
 *tar.xz
 *.bz2
