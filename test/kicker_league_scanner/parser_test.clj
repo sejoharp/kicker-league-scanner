@@ -1,6 +1,7 @@
 (ns kicker-league-scanner.parser-test
   (:require [clojure.test :refer :all])
-  (:require [kicker-league-scanner.io :as io]
+  (:require [clojure.string :as str]
+            [kicker-league-scanner.io :as io]
             [kicker-league-scanner.parser :as parser]))
 
 (deftest html->hickory-test
@@ -209,13 +210,14 @@
 
 (deftest detects-invalid-matches
   (let [valid-match-html (io/html->hickory "test/resources/match.html")
-        missing-date-match-html (io/html->hickory "test/resources/match-missing-date.html")]
+        missing-date-match-html (io/html->hickory "test/resources/match-missing-date.html")
+        match-unacknowledged-html (io/html->hickory "test/resources/match-unacknowledged.html")]
     (is (true? (parser/valid-match? valid-match-html)))
-    (is (false? (parser/valid-match? missing-date-match-html)))))
+    (is (false? (parser/valid-match? missing-date-match-html)))
+    (is (false? (parser/valid-match? match-unacknowledged-html)))))
 
 (deftest parses-match
-  (let [match-html (io/html->hickory "test/resources/match.html")
-        invalid-match-html (io/html->hickory "test/resources/match-missing-date.html")]
+  (let [match-html (io/html->hickory "test/resources/match.html")]
     (is (= {:date       "2023-09-05"
             :home-team  "Flying Circus"
             :guest-team "Kickertrupp (NR)"
@@ -237,5 +239,62 @@
                          {:home {:names ["George" "Felix"] :score 6} :guest {:names ["Samuel" "Derek"] :score 2} :position 16}]
             :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"
             :match-day  1}
-           (parser/parse-match match-html)))
+           (parser/parse-match match-html)))))
+
+(deftest detects-invalid-match
+  (let [invalid-match-html (io/html->hickory "test/resources/match-missing-date.html")]
     (is (nil? (parser/parse-valid-match invalid-match-html)))))
+
+(defn get-team-goals [games team]
+  (map (fn [game]
+         (get-in game [team :score])) games))
+
+(defn missing-scores? [match]
+  (let [home-goals (get-team-goals (:games match) :home)
+        guest-goals (get-team-goals (:games match) :guest)]
+    (> (count (filter nil? (concat home-goals guest-goals))) 0)
+    ))
+
+
+(defn match-score [{:keys [games] :as match}]
+  (let [match-points (map (fn [game]
+                            (let [home-score (get-in [:home :score] game)
+                                  guest-score (get-in [:guest :score] game)]
+                              (cond
+                                (= home-score guest-score) 2
+                                (> home-score guest-score) 2
+                                :else 0)))
+                          games)]
+    (reduce + match-points)))
+
+(defn not-32-points? [match]
+  (not (= 32 (match-score match))))
+
+(defn incomplete-match? [match]
+  (println (:date match) (:link match))
+  (when (str/starts-with? (:date match) "2024")
+    (or
+      (missing-scores? match)
+      (not-32-points? match))))
+
+; test do find incomplete written matches - it should be fixed by waiting until the matches are completed.
+; in this came: not live or unacknowledged
+#_(deftest finds-running-matches
+  (let [all-matches (->> "downloaded-matches"
+                         io/read-match-files
+                         (map io/read-match-from-edn))
+        incomplete-matches (doall (filter incomplete-match?
+                                          all-matches))]
+    (doseq [match incomplete-matches]
+      (when (not (-> match
+                     :games
+                     first
+                     :home
+                     :names
+                     first
+                     nil?))
+        (clojure.pprint/pprint match)
+        (println (str "missing scores? " (missing-scores? match)))
+        (println (str "not 32 points reached: " (not-32-points? match)))))
+
+    #_(is (nil? (seq incomplete-matches)))))

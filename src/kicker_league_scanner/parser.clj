@@ -211,7 +211,9 @@
                          first)
         cleaned-date-string (->> date-string
                                  str/trim)]
-    (not (str/starts-with? cleaned-date-string "N/A"))))
+    (and (not (str/starts-with? cleaned-date-string "N/A"))
+         (not (str/includes? cleaned-date-string "(Ergebnis unbestätigt)"))
+         (not (str/includes? cleaned-date-string "live")))))
 
 (defn parse-match [match-page]
   (let [date (parse-date match-page)
