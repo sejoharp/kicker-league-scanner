@@ -19,3 +19,5 @@ pom.xml.asc
 parsed_seasons.clj
 .DS_Store
 /.pwd
+.clj-kondo/*
+.lsp
