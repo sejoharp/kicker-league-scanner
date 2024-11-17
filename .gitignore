@@ -21,3 +21,4 @@ parsed_seasons.clj
 /.pwd
 .clj-kondo/*
 .lsp
+.env

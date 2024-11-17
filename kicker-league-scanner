@@ -1,0 +1,9 @@
+#!/sbin/openrc-run
+name="kicker-league-scanner"
+description="scans kicker league and parses new matches and uploads it"
+command="/root/kicker-league-scanner/start.sh"
+command_background=true
+pidfile="/run/kicker-league-scanner.pid"
+output_log="/var/log/kicker-league-scanner.log"
+error_log="/var/log/kicker-league-scanner_error.log"
+
