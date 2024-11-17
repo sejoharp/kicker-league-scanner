@@ -86,8 +86,15 @@ OPTIONS:
    -?, --help
 ```
 
+## add openrc service
+1. copy `kicker-league-scanner` to `/etc/init.d/kicker-league-scanner
+2. `chmod +x /etc/init.d/kicker-league-scanner`
+3. activate default openrc level: `openrc default`
+4. register service: `rc-update add kicker-league-scanner default`
+5. start server: `service kicker-league-scanner start`
+
 ## Todos
-[ ] deploy to lxc with alpine linux and create a daemon with OpenRC
+[x] deploy to lxc with alpine linux and create a daemon with OpenRC
 
 [ ] build jar with github actions
 
