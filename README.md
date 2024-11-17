@@ -33,7 +33,32 @@ GLOBAL OPTIONS:
    -mdp, --match-directory-path S  downloaded-matches  Location of all matches.
    -?, --help
 ```
-## upload options
+### download options
+```shell
+NAME:
+ kicker-league-scanner download - downloads all matches for the given season
+
+USAGE:
+ kicker-league-scanner [download|d] [command options] [arguments...]
+
+OPTIONS:
+   -s, --season S  2024/25  target season
+   -?, --help
+```
+
+### export options
+```shell
+NAME:
+ kicker-league-scanner export - exports all matches to a given csv file
+
+USAGE:
+ kicker-league-scanner [export|e] [command options] [arguments...]
+
+OPTIONS:
+   -tcf, --target-csv-file S  ./all-games-2024-11-10.csv.bz2  Location for the csv file with all games.
+   -?, --help
+```
+### upload options
 ```shell
 NAME:
  kicker-league-scanner upload - uploads all matches to nextcloud
@@ -47,19 +72,7 @@ OPTIONS:
    -tp, --target-password S  target password [$KICKER_TARGET_PASSWORD]
    -?, --help
 ```
-## download options
-```shell
-NAME:
- kicker-league-scanner download - downloads all matches for the given season
-
-USAGE:
- kicker-league-scanner [download|d] [command options] [arguments...]
-
-OPTIONS:
-   -s, --season S  2024/25  target season
-   -?, --help
-```
-## server options
+### server options
 ```shell
 NAME:
  kicker-league-scanner server - uploads all matches to nextcloud
@@ -73,29 +86,15 @@ OPTIONS:
    -tp, --target-password S  target password [$KICKER_TARGET_PASSWORD]
    -?, --help
 ```
-## export options
-```shell
-NAME:
- kicker-league-scanner export - exports all matches to a given csv file
 
-USAGE:
- kicker-league-scanner [export|e] [command options] [arguments...]
-
-OPTIONS:
-   -tcf, --target-csv-file S  ./all-games-2024-11-10.csv.bz2  Location for the csv file with all games.
-   -?, --help
-```
-
-## add openrc service
-1. copy `kicker-league-scanner` to `/etc/init.d/kicker-league-scanner
+## Run as background service
+1. copy `kicker-league-scanner` to `/etc/init.d/kicker-league-scanner`
 2. `chmod +x /etc/init.d/kicker-league-scanner`
 3. activate default openrc level: `openrc default`
 4. register service: `rc-update add kicker-league-scanner default`
 5. start server: `service kicker-league-scanner start`
 
 ## Todos
-[x] deploy to lxc with alpine linux and create a daemon with OpenRC
-
 [ ] build jar with github actions
 
 [ ] change author
@@ -105,6 +104,8 @@ OPTIONS:
 - https://gist.github.com/andfadeev/176abae0a0d55b90492c67d2978ba6c0
 - https://www.youtube.com/watch?v=a1TvDcDop2k
 - https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
+
+[x] deploy to lxc with alpine linux and create a daemon with OpenRC
 
 [x] expose state with timestamp via status page to monitor with updatekuma
 
