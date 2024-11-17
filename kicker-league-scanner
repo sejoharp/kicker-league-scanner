@@ -7,3 +7,14 @@ pidfile="/run/kicker-league-scanner.pid"
 output_log="/var/log/kicker-league-scanner.log"
 error_log="/var/log/kicker-league-scanner_error.log"
 
+start() {
+    ebegin "Starting ${name}"
+    start-stop-daemon --start --make-pidfile --pidfile "${pidfile}" --background --exec "${command}
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${name}"
+    start-stop-daemon --stop --pidfile "${pidfile}"
+    eend $?
+}
