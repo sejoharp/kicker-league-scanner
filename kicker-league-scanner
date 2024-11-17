@@ -9,12 +9,14 @@ error_log="/var/log/kicker-league-scanner_error.log"
 
 start() {
     ebegin "Starting ${name}"
-    start-stop-daemon --start --make-pidfile --pidfile "${pidfile}" --background --exec "${command}
+    start-stop-daemon --start --make-pidfile --pidfile "${pidfile}" --background --exec "${command}"
     eend $?
 }
 
 stop() {
     ebegin "Stopping ${name}"
+    echo $(pgrep -f "UseParallelGC") > "${pidfile}"
     start-stop-daemon --stop --pidfile "${pidfile}"
-    eend $?
+    eend 0
 }
+
