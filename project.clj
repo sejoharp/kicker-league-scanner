@@ -20,8 +20,7 @@
   :main ^:skip-aot kicker-league-scanner.core
   :repl-options {:init-ns de.otto.jarvis.zerometers.core}
 
-  :jvm-opts ["-XX:+UseParallelGC"
-             "-Xverify:none"]
+  :jvm-opts ["-XX:+UseParallelGC" "-Xverify:none"]
 
   :source-paths ["src"]
   :resource-paths ["resources"]
