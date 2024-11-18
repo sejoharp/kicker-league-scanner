@@ -97,9 +97,9 @@ OPTIONS:
 ## TODOs
 [ ] change openrc start
 - build uberjar once
-- do --chdir to /root/kicker-league-scanner in openrc
-- change command to "source && java -jar .."
-- wait for the standalone.jar process and put into pidfile
+- do --chdir to /root/kicker-league-scanner in openrc kicker-league-scanner script
+- change command to "source .env && java -jar .."
+- wait for the ..standalone.jar process and put into pidfile
   - maybe the process is instantly there, because the command does not do `lein uberjar` anymore.
 
 [ ] build jar with github actions
