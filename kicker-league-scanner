@@ -9,7 +9,7 @@ error_log="/var/log/kicker-league-scanner_error.log"
 
 start() {
     ebegin "Starting ${name}"
-    start-stop-daemon --start --make-pidfile --pidfile "${pidfile}" --background --exec "${command}"
+    start-stop-daemon --start --background --exec "${command}"
     eend $?
 }
 

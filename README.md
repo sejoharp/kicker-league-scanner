@@ -88,19 +88,13 @@ OPTIONS:
 ```
 
 ## Run as background service
-1. copy `kicker-league-scanner` to `/etc/init.d/kicker-league-scanner`
-2. `chmod +x /etc/init.d/kicker-league-scanner`
-3. activate default openrc level: `openrc default`
-4. register service: `rc-update add kicker-league-scanner default`
-5. start server: `service kicker-league-scanner start`
+1. create standalone jar: `./lein.sh uberjar`
+1. link `kicker-league-scanner` to `/etc/init.d/kicker-league-scanner`
+1. activate default openrc level: `openrc default`
+1. register service: `rc-update add kicker-league-scanner default`
+1. start server: `service kicker-league-scanner start`
 
 ## TODOs
-[ ] change openrc start
-- build uberjar once
-- do --chdir to /root/kicker-league-scanner in openrc kicker-league-scanner script
-- change command to "source .env && java -jar .."
-- wait for the ..standalone.jar process and put into pidfile
-  - maybe the process is instantly there, because the command does not do `lein uberjar` anymore.
 
 [ ] build jar with github actions
 
