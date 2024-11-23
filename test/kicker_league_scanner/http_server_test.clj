@@ -8,13 +8,14 @@
                                                          :new-match-count    1
                                                          :parsed-match-count 1
                                                          :valid-match-count  1
-                                                         :valid-matches [{:date       "2023-09-05"
-                                                                          :home-team  "Flying Circus"
-                                                                          :guest-team "Kickertrupp (NR)"
-                                                                          :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}]
+                                                         :valid-matches      [{:date       "2023-09-05"
+                                                                               :home-team  "Flying Circus"
+                                                                               :guest-team "Kickertrupp (NR)"
+                                                                               :link       "https://kickern-hamburg.de//liga/ergebnisse-und-tabellen?task=begegnung_spielplan&veranstaltungid=229&id=15012"}]
                                                          :last-run           0}))
 (deftest shows-initial-status-content-test
-  (let [server (server/start-server {:scheduled-fn       scheduled-fn-mock
+  (let [server (server/start-server {:port               80
+                                     :scheduled-fn       scheduled-fn-mock
                                      :scheduled-interval 5000})]
     (try
       (let [response @(http-client/get "http://localhost/status")
@@ -25,14 +26,15 @@
                 :new-match-count    nil
                 :parsed-match-count nil
                 :valid-match-count  nil
-                :valid-matches  nil}
+                :valid-matches      nil}
                body)))
       (catch Exception e
         (println "test failed" e))
       (finally (server/stop-server server)))))
 
 (deftest updates-status-after-downloading-new-matches
-  (let [server (server/start-server {:scheduled-fn       scheduled-fn-mock
+  (let [server (server/start-server {:port               80
+                                     :scheduled-fn       scheduled-fn-mock
                                      :scheduled-interval 1})]
     (try
       (loop [retries 5]

@@ -75,5 +75,10 @@
                                  :short  "tp"
                                  :as     "target password"
                                  :type   :string
-                                 :env    "KICKER_TARGET_PASSWORD"}]
+                                 :env    "KICKER_TARGET_PASSWORD"}
+                                {:option "port"
+                                 :short  "p"
+                                 :as     "http port"
+                                 :type   :int
+                                 :default 80}]
                   :runs        http-server/start-server-blocking-mode}]})

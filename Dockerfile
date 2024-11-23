@@ -23,5 +23,4 @@ COPY --from=builder /app/target/kicker-league-scanner-1.0.0-standalone.jar /app/
 EXPOSE 5000
 
 # Command to start the Clojure application
-#TODO: add to link
-CMD ["java", "-jar", "/app/kicker-league-scanner-1.0.0-standalone.jar", "--match-directory-path", "/app/downloaded-matches"]
+CMD ["java", "-jar", "/app/kicker-league-scanner-1.0.0-standalone.jar", "--match-directory-path", "/app/downloaded-matches", "--port", "5000"]
