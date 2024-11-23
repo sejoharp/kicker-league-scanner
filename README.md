@@ -93,6 +93,19 @@ OPTIONS:
 1. register service: `rc-update add klsd default`
 1. start server: `service klsd start`
 
+## run as docker container
+### build
+1. build the container:  
+`docker build -t kicker-league-scanner .`
+2. save container to file:  
+` docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz`
+3. copy to target
+4. load image:  
+`gunzip -c kicker-league-scanner.tar.gz | docker load`
+5. start the container:  
+`docker run -d -p 5000:5000 --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
+
+
 ## TODOs 
 
 [ ] build jar with github actions
