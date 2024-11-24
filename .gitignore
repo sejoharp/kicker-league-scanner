@@ -22,4 +22,3 @@ parsed_seasons.clj
 .clj-kondo/*
 .lsp
 .env
-*.tar.*

@@ -27,7 +27,7 @@
 
 (def twenty-four-hours 86400000)
 
-(defn start-server [{:keys [scheduled-fn scheduled-interval port] :as options}]
+(defn start-server [{:keys [scheduled-fn scheduled-interval] :as options}]
   (let [app-status (atom {:found-match-count  nil
                           :new-match-count    nil
                           :parsed-match-count nil
@@ -38,7 +38,7 @@
         scheduled-job (if (and scheduled-fn scheduled-interval)
                         (at/every scheduled-interval (partial scheduled-fn app-status) at-pool {:initial-delay scheduled-interval})
                         (at/every twenty-four-hours (partial io/update-data! options app-status) at-pool))
-        http-server (hk-server/run-server (routes app-status) {:port                 port
+        http-server (hk-server/run-server (routes app-status) {:port                 80
                                                                :legacy-return-value? false})]
     (log/info (str "http server started: http://localhost"))
     http-server))
