@@ -97,13 +97,18 @@ OPTIONS:
 ### build
 1. build the container:  
 `docker build -t kicker-league-scanner .`
-2. save container to file:  
-` docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz`
-3. copy to target
-4. load image:  
+### create docker archive
+1. save container to file:  
+`docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz`
+1. copy to target
+1. load image:  
 `gunzip -c kicker-league-scanner.tar.gz | docker load`
-5. start the container:  
-`docker run -d -p 5000:5000 --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
+### run
+2. start the container:  
+`docker run -d -p 5000:80 --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
+### docker-compose.yaml
+1. start the container:  
+`docker-compose up -d`
 
 
 ## TODOs 
