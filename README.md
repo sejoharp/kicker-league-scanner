@@ -26,65 +26,13 @@ COMMANDS:
    download, d          downloads all matches for the given season
    export, e            exports all matches to a given csv file
    upload, u            uploads all matches to nextcloud
-   server, s            uploads all matches to nextcloud
+   server, s            cronjob that downloads and uploads all matches to nextcloud
 
 GLOBAL OPTIONS:
-   -mdp, --match-directory-path S  downloaded-matches  Location of all matches.
-   -?, --help
-```
-#### download options
-```shell
-NAME:
- kicker-league-scanner download - downloads all matches for the given season
-
-USAGE:
- kicker-league-scanner [download|d] [command options] [arguments...]
-
-OPTIONS:
-   -s, --season S  2024/25  target season
    -?, --help
 ```
 
-#### export options
-```shell
-NAME:
- kicker-league-scanner export - exports all matches to a given csv file
-
-USAGE:
- kicker-league-scanner [export|e] [command options] [arguments...]
-
-OPTIONS:
-   -tcf, --target-csv-file S  ./all-games-2024-11-10.csv.bz2  Location for the csv file with all games.
-   -?, --help
-```
-#### upload options
-```shell
-NAME:
- kicker-league-scanner upload - uploads all matches to nextcloud
-
-USAGE:
- kicker-league-scanner [upload|u] [command options] [arguments...]
-
-OPTIONS:
-   -td, --target-domain S    target domain [$KICKER_TARGET_DOMAIN]
-   -tu, --target-user S      target user [$KICKER_TARGET_USER]
-   -tp, --target-password S  target password [$KICKER_TARGET_PASSWORD]
-   -?, --help
-```
-#### server options
-```shell
-NAME:
- kicker-league-scanner server - uploads all matches to nextcloud
-
-USAGE:
- kicker-league-scanner [server|s] [command options] [arguments...]
-
-OPTIONS:
-   -td, --target-domain S    target domain [$KICKER_TARGET_DOMAIN]
-   -tu, --target-user S      target user [$KICKER_TARGET_USER]
-   -tp, --target-password S  target password [$KICKER_TARGET_PASSWORD]
-   -?, --help
-```
+call `kicker-league-scanner [command] --help` for more infos to the commands.
 
 ## Run as openrc background service
 1. create standalone jar: `./lein.sh uberjar`
