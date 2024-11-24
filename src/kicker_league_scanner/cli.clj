@@ -17,15 +17,15 @@
   (str "./" default-csv-file-name))
 
 (defn create-cli-config []
-  {:app         {:command     "kicker-league-scanner"
-                 :description "A command-line kicker stats scanner"
-                 :version     (:version (lpr/read-project))}
-   :global-opts [{:option  "match-directory-path"
+  {:command     "kicker-league-scanner"
+   :description "A command-line kicker stats scanner"
+   :version     (:version (lpr/read-project))
+   :opts        [{:option  "match-directory-path"
                   :short   "mdp"
                   :as      (str "Location of all matches.")
                   :type    :string
                   :default default-downloaded-matches-directory}]
-   :commands    [{:command     "download" :short "d"
+   :subcommands [{:command     "download" :short "d"
                   :description ["downloads all matches for the given season"]
                   :opts        [{:option  "season"
                                  :short   "s"
