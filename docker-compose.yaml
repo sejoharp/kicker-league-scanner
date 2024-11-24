@@ -3,7 +3,7 @@ services:
     image: kicker-league-scanner
     container_name: kicker-league-scanner
     ports:
-      - "5000:80"
+      - "80:80"
     restart: unless-stopped
     volumes:
       - /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches

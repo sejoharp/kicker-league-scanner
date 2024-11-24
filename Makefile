@@ -24,7 +24,7 @@ load:
 
 run:
 	@echo "Starting the container..."
-	docker run -d -p 5000:80 --name $(IMAGE_NAME) --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches $(IMAGE_NAME)
+	docker run -d -p 80:80 --name $(IMAGE_NAME) --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches $(IMAGE_NAME)
 
 compose:
 	@echo "Starting the container with Docker Compose..."
