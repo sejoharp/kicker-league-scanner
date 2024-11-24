@@ -252,9 +252,7 @@
 (defn missing-scores? [match]
   (let [home-goals (get-team-goals (:games match) :home)
         guest-goals (get-team-goals (:games match) :guest)]
-    (> (count (filter nil? (concat home-goals guest-goals))) 0)
-    ))
-
+    (> (count (filter nil? (concat home-goals guest-goals))) 0)))
 
 (defn match-score [{:keys [games] :as match}]
   (let [match-points (map (fn [game]
@@ -274,27 +272,27 @@
   (println (:date match) (:link match))
   (when (str/starts-with? (:date match) "2024")
     (or
-      (missing-scores? match)
-      (not-32-points? match))))
+     (missing-scores? match)
+     (not-32-points? match))))
 
 ; test do find incomplete written matches - it should be fixed by waiting until the matches are completed.
 ; in this came: not live or unacknowledged
 #_(deftest finds-running-matches
-  (let [all-matches (->> "downloaded-matches"
-                         io/read-match-files
-                         (map io/read-match-from-edn))
-        incomplete-matches (doall (filter incomplete-match?
-                                          all-matches))]
-    (doseq [match incomplete-matches]
-      (when (not (-> match
-                     :games
-                     first
-                     :home
-                     :names
-                     first
-                     nil?))
-        (clojure.pprint/pprint match)
-        (println (str "missing scores? " (missing-scores? match)))
-        (println (str "not 32 points reached: " (not-32-points? match)))))
+    (let [all-matches (->> "downloaded-matches"
+                           io/read-match-files
+                           (map io/read-match-from-edn))
+          incomplete-matches (doall (filter incomplete-match?
+                                            all-matches))]
+      (doseq [match incomplete-matches]
+        (when (not (-> match
+                       :games
+                       first
+                       :home
+                       :names
+                       first
+                       nil?))
+          (clojure.pprint/pprint match)
+          (println (str "missing scores? " (missing-scores? match)))
+          (println (str "not 32 points reached: " (not-32-points? match)))))
 
-    #_(is (nil? (seq incomplete-matches)))))
+      #_(is (nil? (seq incomplete-matches)))))

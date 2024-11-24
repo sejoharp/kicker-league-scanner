@@ -1,9 +1,7 @@
 (ns kicker-league-scanner.cli
   (:require [java-time.api :as jt]
             [kicker-league-scanner.http-server :as http-server]
-            [kicker-league-scanner.io :as io]
-            [kicker-league-scanner.parser :as parser]
-            [lein-project-reader.core :as lpr]))
+            [kicker-league-scanner.io :as io]))
 
 (def default-downloaded-matches-directory "downloaded-matches")
 
@@ -19,26 +17,31 @@
 (defn create-cli-config []
   {:command     "kicker-league-scanner"
    :description "A command-line kicker stats scanner"
-   :opts        [{:option  "match-directory-path"
-                  :short   "mdp"
-                  :as      (str "Location of all matches.")
-                  :type    :string
-                  :default default-downloaded-matches-directory}]
    :subcommands [{:command     "download" :short "d"
                   :description ["downloads all matches for the given season"]
                   :opts        [{:option  "season"
                                  :short   "s"
                                  :as      "target season"
                                  :type    :string
-                                 :default io/current-season}]
+                                 :default io/current-season}
+                                {:option  "match-directory-path"
+                                 :short   "mdp"
+                                 :as      "Location of all matches."
+                                 :type    :string
+                                 :default default-downloaded-matches-directory}]
                   :runs        io/load-season!}
                  {:command     "export" :short "e"
                   :description "exports all matches to a given csv file"
                   :opts        [{:option  "target-csv-file"
                                  :short   "tcf"
-                                 :as      (str "Location for the csv file with all games.")
+                                 :as      "Location for the csv file with all games."
                                  :type    :string
-                                 :default default-csv-file-path}]
+                                 :default default-csv-file-path}
+                                {:option  "match-directory-path"
+                                 :short   "mdp"
+                                 :as      "Location of all matches."
+                                 :type    :string
+                                 :default default-downloaded-matches-directory}]
                   :runs        io/save-all-matches-to-csv-file}
                  {:command     "upload" :short "u"
                   :description "uploads all matches to nextcloud"
@@ -56,7 +59,12 @@
                                  :short  "tp"
                                  :as     "target password"
                                  :type   :string
-                                 :env    "KICKER_TARGET_PASSWORD"}]
+                                 :env    "KICKER_TARGET_PASSWORD"}
+                                {:option  "match-directory-path"
+                                 :short   "mdp"
+                                 :as      "Location of all matches."
+                                 :type    :string
+                                 :default default-downloaded-matches-directory}]
                   :runs        io/upload-all-matches-to-nextcloud!}
                  {:command     "server" :short "s"
                   :description "uploads all matches to nextcloud"
@@ -74,5 +82,10 @@
                                  :short  "tp"
                                  :as     "target password"
                                  :type   :string
-                                 :env    "KICKER_TARGET_PASSWORD"}]
+                                 :env    "KICKER_TARGET_PASSWORD"}
+                                {:option  "match-directory-path"
+                                 :short   "mdp"
+                                 :as      "Location of all matches."
+                                 :type    :string
+                                 :default default-downloaded-matches-directory}]
                   :runs        http-server/start-server-blocking-mode}]})
