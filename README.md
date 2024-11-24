@@ -95,7 +95,7 @@ OPTIONS:
 
 ## run as docker container
 ### build
-1. build the container:  
+build the container:  
 `docker build -t kicker-league-scanner .`
 ### create docker archive
 1. save container to file:  
@@ -104,10 +104,10 @@ OPTIONS:
 1. load image:  
 `gunzip -c kicker-league-scanner.tar.gz | docker load`
 ### run
-2. start the container:  
+start the container:  
 `docker run -d -p 5000:80 --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
 ### docker-compose.yaml
-1. start the container:  
+start the container:  
 `docker-compose up -d`
 
 
