@@ -19,7 +19,6 @@
 (defn create-cli-config []
   {:command     "kicker-league-scanner"
    :description "A command-line kicker stats scanner"
-   :version     (:version (lpr/read-project))
    :opts        [{:option  "match-directory-path"
                   :short   "mdp"
                   :as      (str "Location of all matches.")

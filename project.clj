@@ -14,7 +14,6 @@
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/data.csv "1.1.0"]
                  [org.clojure/tools.logging "1.3.0"]
-                 [net.clojars.aneilm/lein-project-reader "0.0.1"]
                  [org.apache.commons/commons-compress "1.26.2"]]
 
   :main ^:skip-aot kicker-league-scanner.core
