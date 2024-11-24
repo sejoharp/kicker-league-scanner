@@ -67,7 +67,7 @@
                                  :default default-downloaded-matches-directory}]
                   :runs        io/upload-all-matches-to-nextcloud!}
                  {:command     "server" :short "s"
-                  :description "uploads all matches to nextcloud"
+                  :description "cronjob that downloads and uploads all matches to nextcloud"
                   :opts        [{:option "target-domain"
                                  :short  "td"
                                  :as     "target domain"
