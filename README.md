@@ -1,6 +1,15 @@
-# kicker-league-scanner
-
-FIXME: description
+<!-- TOC -->
+  * [Installation](#installation)
+  * [Usage](#usage)
+    * [commands](#commands)
+  * [Run as openrc background service](#run-as-openrc-background-service)
+  * [run as docker container](#run-as-docker-container)
+    * [build](#build)
+    * [create docker archive](#create-docker-archive)
+    * [run](#run)
+    * [docker-compose.yaml](#docker-composeyaml)
+  * [TODOs](#todos-)
+<!-- TOC -->
 
 ## Installation
 1. Clone this repo.
