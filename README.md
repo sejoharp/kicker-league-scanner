@@ -8,7 +8,7 @@
     * [create docker archive](#create-docker-archive)
     * [run](#run)
     * [docker-compose.yaml](#docker-composeyaml)
-  * [TODOs](#todos-)
+  * [TODOs](#todos)
 <!-- TOC -->
 
 ## Installation
@@ -68,7 +68,7 @@ start the container:
 `docker-compose up -d`
 
 
-## TODOs 
+## TODOs
 
 [ ] build jar with github actions
 
