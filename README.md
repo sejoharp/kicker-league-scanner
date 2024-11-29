@@ -6,8 +6,9 @@
   * [run as docker container](#run-as-docker-container)
     * [build](#build)
     * [create docker archive](#create-docker-archive)
+    * [prepare environment variables](#prepare-environment-variables)
     * [run](#run)
-    * [docker-compose.yaml](#docker-composeyaml)
+    * [docker compose](#docker-compose)
   * [TODOs](#todos)
 <!-- TOC -->
 
@@ -60,10 +61,12 @@ build the container:
 1. copy to target
 1. load image:  
 `gunzip -c kicker-league-scanner.tar.gz | docker load`
+### prepare environment variables
+Put the environment variables in the file `.env` next to the `docker-compose.yaml` file.
 ### run
 start the container:  
-`docker run -d -p 5000:80 --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
-### docker-compose.yaml
+`docker run -d -p 5000:80 --env-file .env --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
+### docker compose
 start the container:  
 `docker-compose up -d`
 
