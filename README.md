@@ -93,8 +93,12 @@ kicker-league-scanner
 ```
 
 ## TODOs
+[ ] publish docker image to ghcr.io
+- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images
+- https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
 
-[ ] build jar with github actions
+[ ] pull docker image from ghcr.io
+- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pulling-container-images
 
 [ ] change author
 - howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
@@ -103,6 +107,8 @@ kicker-league-scanner
 - https://gist.github.com/andfadeev/176abae0a0d55b90492c67d2978ba6c0
 - https://www.youtube.com/watch?v=a1TvDcDop2k
 - https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
+
+[ ] build jar with github actions
 
 [x] deploy to lxc with alpine linux and create a daemon with OpenRC
 
