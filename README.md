@@ -78,7 +78,10 @@ echo "KICKER_TARGET_PASSWORD=secret" >> .env
 
 # Put the .env file next to the `docker-compose.yaml` file.
 
-# start the container
+# start with docker compose
+docker-compose up -d
+
+# start with plain docker
 docker run \
 -d \ 
 -p 5000:80 \
@@ -87,9 +90,6 @@ docker run \
 --restart unless-stopped \
 --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches \
 kicker-league-scanner
-
-# start via docker compose
-docker-compose up -d
 ```
 
 ## TODOs
