@@ -3,12 +3,7 @@
   * [Usage](#usage)
     * [commands](#commands)
   * [Run as openrc background service](#run-as-openrc-background-service)
-  * [run as docker container](#run-as-docker-container)
-    * [build](#build)
-    * [create docker archive](#create-docker-archive)
-    * [prepare environment variables](#prepare-environment-variables)
-    * [run](#run)
-    * [docker compose](#docker-compose)
+  * [Run as docker container](#run-as-docker-container)
   * [TODOs](#todos)
 <!-- TOC -->
 
@@ -18,7 +13,7 @@
 
 ## Usage
 ```shell
-.lein.sh run [global-options] command [command options] [arguments...]
+./lein.sh run [global-options] command [command options] [arguments...]
 ```
 ### commands
 The default parameters work for me. 
@@ -45,31 +40,57 @@ GLOBAL OPTIONS:
 call `kicker-league-scanner [command] --help` for more infos to the commands.
 
 ## Run as openrc background service
-1. create standalone jar: `./lein.sh uberjar`
-1. link `klsd` to `/etc/init.d/klsd`
-1. activate default openrc level: `openrc default`
-1. register service: `rc-update add klsd default`
-1. start server: `service klsd start`
+```shell
+# create standalone jar
+./lein.sh uberjar
 
-## run as docker container
-### build
-build the container:  
-`docker build -t kicker-league-scanner .`
-### create docker archive
-1. save container to file:  
-`docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz`
-1. copy to target
-1. load image:  
-`gunzip -c kicker-league-scanner.tar.gz | docker load`
-### prepare environment variables
-Put the environment variables in the file `.env` next to the `docker-compose.yaml` file.
-### run
-start the container:  
-`docker run -d -p 5000:80 --env-file .env --name kicker-league-scanner --restart unless-stopped --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches kicker-league-scanner`
-### docker compose
-start the container:  
-`docker-compose up -d`
+# link start script to init system
+ln -s klsd /etc/init.d/klsd
 
+# activate default openrc level
+openrc default
+
+# register service
+rc-update add klsd default
+
+#start server
+service klsd start
+```
+
+## Run as docker container
+```shell
+# build the container  
+docker build -t kicker-league-scanner
+
+# create docker archive by saving container to file  
+docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz
+
+# copy to target
+# e.g. scp ...
+
+# load image
+gunzip -c kicker-league-scanner.tar.gz | docker load
+
+# set environment variables in .env file
+echo "KICKER_TARGET_DOMAIN=my.domain.com" >> .env
+echo "KICKER_TARGET_USER=myuser" >> .env
+echo "KICKER_TARGET_PASSWORD=secret" >> .env
+
+# Put the .env file next to the `docker-compose.yaml` file.
+
+# start the container
+docker run \
+-d \ 
+-p 5000:80 \
+--env-file .env \
+--name kicker-league-scanner \
+--restart unless-stopped \
+--volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches \
+kicker-league-scanner
+
+# start via docker compose
+docker-compose up -d
+```
 
 ## TODOs
 
