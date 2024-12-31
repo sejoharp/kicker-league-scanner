@@ -76,7 +76,7 @@ echo "KICKER_TARGET_DOMAIN=my.domain.com" >> .env
 echo "KICKER_TARGET_USER=myuser" >> .env
 echo "KICKER_TARGET_PASSWORD=secret" >> .env
 
-# Put the .env file next to the `docker-compose.yaml` file.
+# Put the .env file next to the docker-compose.yaml file.
 
 # start with docker compose
 docker-compose up -d
