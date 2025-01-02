@@ -59,17 +59,8 @@ service klsd start
 
 ## Run as docker container
 ```shell
-# build the container  
-docker build -t kicker-league-scanner
-
-# create docker archive by saving container to file  
-docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz
-
-# copy to target
-# e.g. scp ...
-
-# load image
-gunzip -c kicker-league-scanner.tar.gz | docker load
+# login to github docker registry
+docker login ghcr.io -u sejoharp --password=$(echo $SEJOHARP_DOCKER_PULL)
 
 # set environment variables in .env file
 echo "KICKER_TARGET_DOMAIN=my.domain.com" >> .env
@@ -83,23 +74,30 @@ docker-compose up -d
 
 # start with plain docker
 docker run \
--d \ 
+-d \
 -p 5000:80 \
 --env-file .env \
 --name kicker-league-scanner \
 --restart unless-stopped \
 --volume /data/kicker-league-scanner/downloaded-matches:/app/downloaded-matches \
-kicker-league-scanner
+ghcr.io/sejoharp/kicker-league-scanner:latest
 ```
 
+### Create and use local docker container
+```shell
+# build the container  
+docker build -t kicker-league-scanner
+
+# create docker archive by saving container to file  
+docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz
+
+# copy to target
+# e.g. scp ...
+
+# load image
+gunzip -c kicker-league-scanner.tar.gz | docker load
+```
 ## TODOs
-[ ] publish docker image to ghcr.io
-- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images
-- https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
-
-[ ] pull docker image from ghcr.io
-- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pulling-container-images
-
 [ ] change author
 - howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
 
@@ -109,6 +107,13 @@ kicker-league-scanner
 - https://medium.com/@maciekszajna/reloaded-workflow-out-of-the-box-be6b5f38ea98
 
 [ ] build jar with github actions
+
+[x] publish docker image to ghcr.io
+- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images
+- https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+
+[x] pull docker image from ghcr.io
+- https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pulling-container-images
 
 [x] deploy to lxc with alpine linux and create a daemon with OpenRC
 

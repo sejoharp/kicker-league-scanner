@@ -1,6 +1,6 @@
 services:
   kicker-league-scanner:
-    image: kicker-league-scanner
+    image: ghcr.io/sejoharp/kicker-league-scanner:latest
     container_name: kicker-league-scanner
     ports:
       - "80:80"
