@@ -4,6 +4,7 @@
     * [commands](#commands)
   * [Run as openrc background service](#run-as-openrc-background-service)
   * [Run as docker container](#run-as-docker-container)
+    * [Create and use local docker container](#create-and-use-local-docker-container)
   * [TODOs](#todos)
 <!-- TOC -->
 
