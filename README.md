@@ -2,9 +2,9 @@
   * [Installation](#installation)
   * [Usage](#usage)
     * [commands](#commands)
-  * [Run as openrc background service](#run-as-openrc-background-service)
   * [Run as docker container](#run-as-docker-container)
     * [Create and use local docker container](#create-and-use-local-docker-container)
+  * [Run as openrc background service](#run-as-openrc-background-service)
   * [TODOs](#todos)
 <!-- TOC -->
 
@@ -40,27 +40,10 @@ GLOBAL OPTIONS:
 
 call `kicker-league-scanner [command] --help` for more infos to the commands.
 
-## Run as openrc background service
-```shell
-# create standalone jar
-./lein.sh uberjar
-
-# link start script to init system
-ln -s klsd /etc/init.d/klsd
-
-# activate default openrc level
-openrc default
-
-# register service
-rc-update add klsd default
-
-#start server
-service klsd start
-```
-
 ## Run as docker container
 ```shell
 # login to github docker registry
+# $SEJOHARP_DOCKER_PULL contains a github token with read:packages permissions
 docker login ghcr.io -u sejoharp --password=$(echo $SEJOHARP_DOCKER_PULL)
 
 # set environment variables in .env file
@@ -98,6 +81,31 @@ docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz
 # load image
 gunzip -c kicker-league-scanner.tar.gz | docker load
 ```
+
+
+## Run as openrc background service
+```shell
+# create standalone jar
+./lein.sh uberjar
+
+# set environment variables in .env file
+echo "KICKER_TARGET_DOMAIN=my.domain.com" >> .env
+echo "KICKER_TARGET_USER=myuser" >> .env
+echo "KICKER_TARGET_PASSWORD=secret" >> .env
+
+# link start script to init system
+ln -s klsd /etc/init.d/klsd
+
+# activate default openrc level
+openrc default
+
+# register service
+rc-update add klsd default
+
+# start server
+service klsd start
+```
+
 ## TODOs
 [ ] change author
 - howto: https://gist.github.com/amalmurali47/77e8dc1f27c791729518701d2dec3680
