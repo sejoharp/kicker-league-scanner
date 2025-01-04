@@ -23,3 +23,5 @@ parsed_seasons.clj
 .lsp
 .env
 /kicker-league-scanner.tar.gz
+downloaded-matches/
+
