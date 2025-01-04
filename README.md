@@ -42,10 +42,6 @@ call `kicker-league-scanner [command] --help` for more infos to the commands.
 
 ## Run as docker container
 ```shell
-# login to github docker registry
-# $SEJOHARP_DOCKER_PULL contains a github token with read:packages permissions
-docker login ghcr.io -u sejoharp --password=$(echo $SEJOHARP_DOCKER_PULL)
-
 # set environment variables in .env file
 echo "KICKER_TARGET_DOMAIN=my.domain.com" >> .env
 echo "KICKER_TARGET_USER=myuser" >> .env
