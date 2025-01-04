@@ -66,7 +66,7 @@ ghcr.io/sejoharp/kicker-league-scanner:latest
 ### Create and use local docker container
 ```shell
 # build the container  
-docker build -t kicker-league-scanner
+docker build -t kicker-league-scanner .
 
 # create docker archive by saving container to file  
 docker save kicker-league-scanner:latest | gzip > kicker-league-scanner.tar.gz
